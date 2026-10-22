@@ -1,8 +1,14 @@
 """Read-only public vulnerability and package research through MCP."""
 
+import asyncio
+import inspect
 import re
+from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
+from functools import partial, wraps
+from threading import BoundedSemaphore
 from typing import Annotated, Any
 from urllib.parse import quote
 
@@ -22,6 +28,7 @@ KEV_MIRROR = "https://raw.githubusercontent.com/cisagov/kev-data/develop/known_e
 EPSS = "https://api.first.org/data/v1/epss"
 DEPS = "https://api.deps.dev/v3"
 SYSTEMS = {"npm", "pypi", "go", "cargo", "maven", "nuget", "rubygems"}
+MAX_TOOL_WORKERS = 4
 READ_ONLY = ToolAnnotations(
     readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True
 )
@@ -61,17 +68,32 @@ class _VerbatimArgumentsMetadata(FuncMetadata):
 
 
 class MaintainerMCP(FastMCP):
-    """Keep argument values out of errors returned to clients and logs."""
+    """Bound synchronous work and keep argument values out of error messages."""
 
     def __init__(self, *args, **kwargs):
+        self._worker_slots = BoundedSemaphore(MAX_TOOL_WORKERS)
+        self._workers = ThreadPoolExecutor(
+            max_workers=MAX_TOOL_WORKERS, thread_name_prefix="maintainer-tool"
+        )
         super().__init__(*args, **kwargs)
         # SDK 1.30 has no FastMCP version option and otherwise advertises its
-        # own version. These two narrow adapter points are covered by contract
+        # own version. These narrow SDK adapters are covered by contract
         # and real stdio tests; review them before widening the SDK version pin.
         self._mcp_server.version = __version__
 
     def add_tool(self, fn, **kwargs):
-        super().add_tool(fn, **kwargs)
+        registered = fn
+        if not inspect.iscoroutinefunction(fn):
+
+            @wraps(fn)
+            async def registered(**arguments):
+                return await self._run_in_worker(fn, arguments)
+
+        # SDK 1.30 invokes synchronous functions on its asyncio event loop.
+        # Register an async wrapper through the public API; wraps preserves the
+        # signature, descriptions, and output model. The exported Python tool
+        # functions remain synchronous because FastMCP.tool returns the original.
+        super().add_tool(registered, **kwargs)
         # Register through FastMCP, retaining its argument model, output model,
         # conversion, annotations, and context injection. Only disable the
         # lossy string pre-parser on this server's own tool metadata.
@@ -79,11 +101,45 @@ class MaintainerMCP(FastMCP):
         if tool is None:
             raise RuntimeError("MCP tool registration failed")
         original = tool.fn_metadata
+        # SDK-generated argument models otherwise silently ignore extra fields.
+        # Each registration owns its model; rebuild only that model and schema.
+        original.arg_model.model_config.update(extra="forbid", hide_input_in_errors=True)
+        original.arg_model.model_rebuild(force=True)
+        tool.parameters = original.arg_model.model_json_schema(by_alias=True)
         tool.fn_metadata = _VerbatimArgumentsMetadata(
             **{field: getattr(original, field) for field in FuncMetadata.model_fields}
         )
 
+    async def _run_in_worker(self, fn, arguments):
+        if not self._worker_slots.acquire(blocking=False):
+            raise ToolError("Server is busy. Retry after an active tool call finishes.")
+        try:
+            future = self._workers.submit(copy_context().run, partial(fn, **arguments))
+        except RuntimeError:
+            # submit enqueues before starting a thread. A thread-start failure
+            # can leave work whose Future was never returned; discard queued
+            # jobs and stop new admission after that uncertain submission.
+            self.shutdown_workers()
+            self._worker_slots.release()
+            raise ToolError("Tool workers are unavailable or shutting down.") from None
+        # The concurrent Future owns the slot, not the cancellable asyncio
+        # waiter. Cancelling a request cannot admit replacement work while its
+        # synchronous HTTP request is still running. Admission never waits in an
+        # unbounded queue; at most MAX_TOOL_WORKERS futures are outstanding.
+        future.add_done_callback(lambda _: self._worker_slots.release())
+        return await asyncio.wrap_future(future)
+
+    def shutdown_workers(self) -> None:
+        """Stop admission; running requests retain their slots until completion.
+
+        This is idempotent and terminal for this server instance. Threads cannot
+        interrupt HTTP requests; Python may still wait for them at process exit.
+        """
+        self._workers.shutdown(wait=False, cancel_futures=True)
+
     async def call_tool(self, name: str, arguments: dict):
+        if self._tool_manager.get_tool(name) is None:
+            raise ToolError("Unknown tool. Use tools/list to find supported tools.") from None
         try:
             return await super().call_tool(name, arguments)
         except ToolError as exc:
@@ -489,7 +545,10 @@ def main() -> None:
     from .logging_safety import install_sdk_log_safety
 
     install_sdk_log_safety()
-    mcp.run(transport="stdio")
+    try:
+        mcp.run(transport="stdio")
+    finally:
+        mcp.shutdown_workers()
 
 
 if __name__ == "__main__":

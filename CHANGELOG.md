@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.1.2 — 2026-10-22
+
+### Fixed
+
+- Move synchronous MCP lookup work off the protocol event loop. Bound admission
+  to four outstanding jobs per server instance and retain slots for cancelled
+  requests until the underlying worker completes. Excess calls fail promptly.
+- Reject unknown top-level tool fields, with matching `additionalProperties:
+  false` schemas and input-free validation errors.
+- Return a static error for unknown tool names and sanitize the SDK's related
+  warning before it reaches log handlers.
+- Convert unsupported text codecs and lone Unicode surrogates into safe errors
+  in the retained HTTP text helper. The seven MCP tools use JSON, not this helper.
+
+### Verification and documentation
+
+- Add actual stdio regressions for blocked-provider responsiveness, cancellation,
+  saturation, capacity recovery, argument rejection, and unknown-name privacy.
+- Run CLI and wheel verification in isolated Python mode and verify the loaded
+  package originates outside the checkout. Record tested environments and archive
+  digests in CI logs.
+- Add a fail-closed `Required checks` job. Run branch changes through PR checks and
+  retain post-merge checks on `main`, avoiding duplicate branch-push/PR runs.
+- Document overlapping alternatives and a real-user pilot with unmeasured demand
+  explicitly separated from technical verification.
+
+### Compatibility notes
+
+- Calls with formerly ignored extra fields now fail validation.
+- The tool names, supported arguments, and normal output shapes remain stable.
+- Cancellation cannot terminate in-flight synchronous HTTP work; shutdown may
+  wait at process exit. Direct Python calls do not use MCP worker admission.
+- The 0.1.1 audit's higher coverage measurement was not reproduced in a fresh
+  unchanged-baseline run. The follow-up audit records fresh measurements instead
+  of carrying that number forward.
+
 ## 0.1.1 — 2026-10-22
 
 This maintenance release strengthens upstream-data validation and request handling,

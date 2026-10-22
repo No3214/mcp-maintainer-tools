@@ -27,12 +27,23 @@ The optional extras separate development, audit, and build dependencies. For the
 ./.venv/bin/python -m ruff check .
 ./.venv/bin/python -m ruff format --check .
 ./.venv/bin/python -m bandit -q -r src
-./.venv/bin/python -m pytest --cov=mcp_maintainer_tools --cov-report=term-missing --cov-fail-under=85 -q
+./.venv/bin/python -m pytest --cov=mcp_maintainer_tools --cov-report=term-missing --cov-fail-under=90 -q
 ./.venv/bin/python -m build
 ./.venv/bin/python -m twine check --strict dist/*
 ```
 
 These examples use the macOS/Linux interpreter path; substitute the Windows environment's interpreter when needed. CI installs the resulting wheel and exercises its installed CLI entry point and real stdio exchange. Review those tests when changing package contents or entry points. A local failure should be understood and resolved before changing an expected result or lowering a gate.
+
+Wheel verification must import the installed artifact instead of the source
+checkout. After installing the wheel non-editably, run
+`python -I scripts/environment_receipt.py --require-installed` and
+`python -I -m pytest -o pythonpath= --import-mode=importlib tests/test_protocol.py tests/test_cli.py -q`
+with that environment's interpreter. The receipt records dependency versions,
+package origin, and archive hashes without dumping credentials. It is evidence of
+one resolved environment, not a dependency lock file.
+
+The `Required checks` job accepts only successful test, package/quality, and
+dependency jobs. Changes to the matrix must preserve that fail-closed aggregate.
 
 ### Audit runtime dependencies separately
 
@@ -50,7 +61,7 @@ The audit contacts public advisory services and checks known dependency vulnerab
 
 ### Review SDK upgrades explicitly
 
-The runtime dependency is constrained to `mcp>=1.30.0,<1.31`. The server's typed-input handling, application-version reporting, and error/log adapters depend on behavior reviewed in that series. Before widening the range, review those integration points and rerun schema, validation-redaction, handshake, CLI, and stdio regression tests against the proposed SDK. A successful dependency resolution alone is not upgrade validation.
+The runtime dependency is constrained to `mcp>=1.30.0,<1.31`. The server's typed-input handling, application-version reporting, worker dispatch, and error/log adapters depend on behavior reviewed in that series. Before widening the range, review those integration points and rerun schema, validation-redaction, handshake, CLI, cancellation, saturation, and stdio regression tests against the proposed SDK. A successful dependency resolution alone is not upgrade validation.
 
 For network configuration changes, preserve the default-disabled environment trust setting. `MCP_MAINTAINER_TOOLS_TRUST_ENV` accepts only exact lowercase `true` or `false`; opting in must retain TLS verification and use the trusted process environment. Cover both modes and invalid values in deterministic tests; do not silently turn it on when a request fails.
 

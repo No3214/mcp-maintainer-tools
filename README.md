@@ -12,6 +12,8 @@ The server connects an MCP client to **OSV, NVD, CISA KEV, FIRST EPSS, and deps.
 
 This is an early public release. It supplies research inputs; release approval, remediation, and risk decisions remain with the maintainer. It does not inspect a local repository, install dependencies, or apply patches.
 
+Existing scanners and MCP servers address overlapping workflows. The [validation plan](docs/VALIDATION.md) compares alternatives and defines a real-user pilot; external adoption and a measurable advantage have not yet been established.
+
 ## Get started
 
 You need **Git, Python 3.11 or newer, an MCP client with stdio support, and HTTPS access to the providers**. Install from this repository; a PyPI release is not provided by this project at present.
@@ -120,6 +122,8 @@ From a checkout, install the development dependencies and run the tests:
 On Windows, use `.\.venv\Scripts\python.exe` in place of `./.venv/bin/python`. Tests use mocked provider responses, including a real MCP stdio client/server exchange; they do not require API keys. See [CONTRIBUTING.md](CONTRIBUTING.md) for change and testing guidance, and the [CI workflow](.github/workflows/tests.yml) for the current validation matrix.
 
 CI is configured for Python **3.11–3.14 on Ubuntu**, plus **Python 3.12 on Windows and macOS**. Additional jobs check lint and formatting, Bandit security patterns, build and Twine package validation, CLI/stdio behavior using the built wheel, and known vulnerabilities in the resolved runtime dependencies. The workflow badge links to actual run results; configuration alone does not establish that a revision passed.
+
+The `Required checks` job succeeds only when every prerequisite job succeeds. Job logs record the tested interpreter, resolved dependencies, commit, and package origin; package verification also records archive digests. See the [0.1.2 follow-up audit](docs/AUDIT-0.1.2-2026-10-22.md) for measured results and limits.
 
 The `dev`, `audit`, and `build` extras provide the corresponding local tools. The [contribution guide](CONTRIBUTING.md#run-the-quality-and-package-checks) lists the commands. The MCP SDK is constrained to the **1.30 series** while its typed-input, protocol-version, and log/error adapters are reviewed against that series.
 
