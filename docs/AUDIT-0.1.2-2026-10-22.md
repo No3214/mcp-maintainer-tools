@@ -86,6 +86,26 @@ merge boundary. Protection is a separate repository setting; its current state
 must be read back after configuration. Multiple agent reviews are not independent
 human approval, and this audit does not claim a mandatory human reviewer.
 
+### Verified remote results and merge protection
+
+[PR #2](https://github.com/No3214/mcp-maintainer-tools/pull/2) passed all nine
+[PR jobs](https://github.com/No3214/mcp-maintainer-tools/actions/runs/39825753203)
+before merging. The resulting commit
+[`0f5b050ce509721f92c470086520bdb99f7878e8`](https://github.com/No3214/mcp-maintainer-tools/commit/0f5b050ce509721f92c470086520bdb99f7878e8)
+also passed all nine [main jobs](https://github.com/No3214/mcp-maintainer-tools/actions/runs/39826939889).
+Both runs executed 281 tests in each of the six matrix environments. Combined
+coverage was 95.99% on Ubuntu Python 3.14 and 96.01% on the other five environments;
+every environment exceeded the 90% gate. Each quality job also passed the four
+installed-wheel CLI/stdio tests. The full matrix used the source installation.
+
+Repository settings and the branch API were read back on 2026-10-22 after
+configuration. `main` was protected with PRs required, up-to-date branches
+required, and `Required checks` accepted specifically from GitHub Actions.
+These requirements applied to administrators too; force pushes and branch
+deletion were not allowed. Human approval was not configured as a required gate.
+This is a dated observation of repository settings, which can change independently
+of this file; the current settings remain authoritative.
+
 ## Remaining operating limits
 
 - The four-job limit applies to synchronous tools dispatched by one server

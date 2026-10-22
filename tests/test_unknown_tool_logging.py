@@ -16,7 +16,11 @@ SDK_LOGGER = "mcp.server.lowlevel.server"
 
 @pytest.fixture(autouse=True)
 def installed_filters():
-    loggers = [logging.getLogger(), logging.getLogger(SDK_LOGGER)]
+    loggers = [
+        logging.getLogger(),
+        logging.getLogger(SDK_LOGGER),
+        logging.getLogger("mcp.server.fastmcp.server"),
+    ]
     already_installed = [logging_safety._FILTER in logger.filters for logger in loggers]
     logging_safety.install_sdk_log_safety()
     yield

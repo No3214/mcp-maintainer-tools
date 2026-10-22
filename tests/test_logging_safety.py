@@ -1,11 +1,13 @@
 """Exercise real SDK validation logging with in-memory protocol messages."""
 
 import asyncio
+import inspect
 import logging
 from types import SimpleNamespace
 
 import pytest
 from mcp import types
+from mcp.server.fastmcp import FastMCP
 from mcp.server.lowlevel.server import Server
 from mcp.shared.message import SessionMessage
 from mcp.shared.session import BaseSession
@@ -48,7 +50,11 @@ class Outgoing:
 
 @pytest.fixture(autouse=True)
 def installed_filters():
-    loggers = [logging.getLogger(), logging.getLogger("mcp.server.lowlevel.server")]
+    loggers = [
+        logging.getLogger(),
+        logging.getLogger("mcp.server.lowlevel.server"),
+        logging.getLogger("mcp.server.fastmcp.server"),
+    ]
     already_installed = [logging_safety._FILTER in logger.filters for logger in loggers]
     logging_safety.install_sdk_log_safety()
     yield
@@ -120,24 +126,42 @@ def test_actual_sdk_invalid_json_stream_error_is_sanitized(caplog):
 
 
 @pytest.mark.parametrize(
-    "source,prefix,logger_name",
+    "source,prefix,logger_name,level",
     [
-        (logging_safety._SESSION_SOURCE, "Failed to validate request: %s", "root"),
-        (logging_safety._SESSION_SOURCE, "Failed to validate notification: %s", "root"),
+        (logging_safety._SESSION_SOURCE, "Failed to validate request: %s", "root", logging.WARNING),
+        (
+            logging_safety._SESSION_SOURCE,
+            "Failed to validate notification: %s",
+            "root",
+            logging.WARNING,
+        ),
         (
             logging_safety._SERVER_SOURCE,
             "Received exception from stream: %s",
             "mcp.server.lowlevel.server",
+            logging.WARNING,
+        ),
+        (
+            inspect.getfile(FastMCP),
+            "Error getting prompt %s",
+            "mcp.server.fastmcp.server",
+            logging.ERROR,
+        ),
+        (
+            logging_safety._SESSION_SOURCE,
+            "Response ID %r cannot be normalized to match pending requests",
+            "root",
+            logging.WARNING,
         ),
     ],
 )
 def test_validation_logs_clear_arguments_exception_and_stack_text(
-    source, prefix, logger_name, caplog
+    source, prefix, logger_name, level, caplog
 ):
     error = ValueError(MARKER)
     record = logging.LogRecord(
         logger_name,
-        logging.WARNING,
+        level,
         source,
         1,
         prefix,
@@ -151,6 +175,7 @@ def test_validation_logs_clear_arguments_exception_and_stack_text(
     assert "input values omitted" in caplog.text
     assert MARKER not in caplog.text
     assert MARKER not in str(record.__dict__)
+    assert record.levelno == level
 
 
 def test_unrelated_diagnostics_and_non_sdk_messages_are_preserved(caplog):
@@ -160,13 +185,36 @@ def test_unrelated_diagnostics_and_non_sdk_messages_are_preserved(caplog):
     assert f"Failed to validate request: {MARKER}" in caplog.text
 
 
+@pytest.mark.parametrize(
+    "source,message,logger_name",
+    [
+        (__file__, "Error getting prompt %s", "mcp.server.fastmcp.server"),
+        (inspect.getfile(FastMCP), "Maintenance diagnostic: %s", "mcp.server.fastmcp.server"),
+        (__file__, "Response ID %r cannot be normalized to match pending requests", "root"),
+        (logging_safety._SESSION_SOURCE, "Maintenance diagnostic: %s", "root"),
+    ],
+    ids=["prompt-non-sdk", "prompt-unrelated", "response-non-sdk", "response-unrelated"],
+)
+def test_prompt_and_response_filters_preserve_unrelated_records(
+    source, message, logger_name, caplog
+):
+    record = logging.LogRecord(logger_name, logging.WARNING, source, 1, message, (MARKER,), None)
+    logging.getLogger(logger_name).handle(record)
+    assert message % MARKER in caplog.text
+    assert record.msg == message
+    assert record.args == (MARKER,)
+    assert record.levelno == logging.WARNING
+
+
 def test_installation_is_idempotent_and_keeps_logging_configuration():
-    root = logging.getLogger()
-    before = (root.level, list(root.handlers))
+    loggers = [
+        logging.getLogger(),
+        logging.getLogger("mcp.server.lowlevel.server"),
+        logging.getLogger("mcp.server.fastmcp.server"),
+    ]
+    before = [(logger.level, list(logger.handlers)) for logger in loggers]
     logging_safety.install_sdk_log_safety()
     logging_safety.install_sdk_log_safety()
-    assert root.filters.count(logging_safety._FILTER) == 1
-    assert (
-        logging.getLogger("mcp.server.lowlevel.server").filters.count(logging_safety._FILTER) == 1
-    )
-    assert (root.level, root.handlers) == before
+    for logger, configuration in zip(loggers, before, strict=True):
+        assert logger.filters.count(logging_safety._FILTER) == 1
+        assert (logger.level, logger.handlers) == configuration

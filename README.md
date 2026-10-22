@@ -123,7 +123,7 @@ On Windows, use `.\.venv\Scripts\python.exe` in place of `./.venv/bin/python`. T
 
 CI is configured for Python **3.11–3.14 on Ubuntu**, plus **Python 3.12 on Windows and macOS**. Additional jobs check lint and formatting, Bandit security patterns, build and Twine package validation, CLI/stdio behavior using the built wheel, and known vulnerabilities in the resolved runtime dependencies. The workflow badge links to actual run results; configuration alone does not establish that a revision passed.
 
-The `Required checks` job succeeds only when every prerequisite job succeeds. Job logs record the tested interpreter, resolved dependencies, commit, and package origin; package verification also records archive digests. See the [0.1.2 follow-up audit](docs/AUDIT-0.1.2-2026-10-22.md) for measured results and limits.
+The `Required checks` job succeeds only when every prerequisite job succeeds. Job logs record the tested interpreter, resolved dependencies, commit, and package origin; package verification also records archive digests. See the [0.1.3 protocol logging audit](docs/AUDIT-0.1.3-2026-10-22.md) for the latest measured results and limits, and the [0.1.2 dispatch audit](docs/AUDIT-0.1.2-2026-10-22.md) for the concurrency changes and verified repository protection.
 
 The `dev`, `audit`, and `build` extras provide the corresponding local tools. The [contribution guide](CONTRIBUTING.md#run-the-quality-and-package-checks) lists the commands. The MCP SDK is constrained to the **1.30 series** while its typed-input, protocol-version, and log/error adapters are reviewed against that series.
 

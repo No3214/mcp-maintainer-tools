@@ -1,6 +1,6 @@
 # Threat model
 
-**Scope:** MCP Maintainer Tools 0.1.2, reviewed 2026-10-22.
+**Scope:** MCP Maintainer Tools 0.1.3, reviewed 2026-10-22.
 
 ## Purpose and assets
 
@@ -50,6 +50,10 @@ an upstream responsibility. CVE matching happens locally for both sources.
    the protocol waiter but cannot terminate an in-flight HTTP operation.
 8. **Unknown tool-name disclosure:** official entry points sanitize the SDK's
    specific unknown-tool warning, and return a static unknown-tool error.
+9. **Non-tool protocol input in default logs:** official entry points sanitize
+   the SDK's failed-prompt error and unrecognized-response-ID warning, including
+   exception details. A local protocol peer supplies these values; these findings
+   did not demonstrate extraction of an ambient API key or another user's data.
 
 ## Threats outside the implemented boundary
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.3 — 2026-10-22
+
+### Fixed
+
+- Keep caller-supplied prompt names and unrecognized response IDs out of the
+  SDK's default stderr diagnostics. Match the known SDK source and message paths;
+  retain log severity and unrelated diagnostics while removing exception details
+  that can repeat the supplied value.
+- Cover the non-tool protocol handlers reachable through the official stdio
+  entry point. The seven tools and requesting-client error semantics are unchanged.
+
+### Verification and documentation
+
+- Add regressions for both default-log disclosures, including continued ping and
+  tool discovery after the rejected messages.
+- Run the new protocol-log regressions against the installed wheel in CI.
+- Record the completed 0.1.2 remote matrix and the verified main-branch merge
+  requirements. These are dated observations, not a claim about future settings.
+
 ## 0.1.2 — 2026-10-22
 
 ### Fixed

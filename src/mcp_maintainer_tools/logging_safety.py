@@ -1,15 +1,16 @@
 """Sanitize known MCP SDK input logs without suppressing diagnostics.
 
 This adapter covers the installed SDK's malformed request, notification,
-stdio-message validation and unknown-tool warning paths. It is not a general
-secret scrubber: explicitly enabling arbitrary SDK DEBUG logs may still expose
-incoming protocol messages.
+stdio-message validation, unknown-tool, prompt-error and response-ID warning
+paths. It is not a general secret scrubber: explicitly enabling arbitrary SDK
+DEBUG logs may still expose incoming protocol messages.
 """
 
 import logging
 import os
 from threading import Lock
 
+import mcp.server.fastmcp.server as sdk_fastmcp
 import mcp.server.lowlevel.server as sdk_server
 import mcp.shared.session as sdk_session
 
@@ -20,6 +21,7 @@ def _source_path(path: str) -> str:
 
 _SESSION_SOURCE = _source_path(sdk_session.__file__)
 _SERVER_SOURCE = _source_path(sdk_server.__file__)
+_FASTMCP_SOURCE = _source_path(sdk_fastmcp.__file__)
 _RULES = {
     _SESSION_SOURCE: (
         (
@@ -31,6 +33,10 @@ _RULES = {
             "Failed to validate notification:",
             "MCP rejected an invalid notification; input values omitted.",
         ),
+        (
+            "Response ID ",
+            "MCP received an unrecognized response ID; input values omitted.",
+        ),
     ),
     _SERVER_SOURCE: (
         (
@@ -40,6 +46,12 @@ _RULES = {
         (
             "Tool '%s' not listed, no validation will be performed",
             "MCP received an unknown tool name; input values omitted.",
+        ),
+    ),
+    _FASTMCP_SOURCE: (
+        (
+            "Error getting prompt ",
+            "MCP rejected a prompt request; input values omitted.",
         ),
     ),
 }
@@ -70,12 +82,14 @@ _INSTALL_LOCK = Lock()
 def install_sdk_log_safety() -> None:
     """Install idempotent filters before starting the official stdio server.
 
-    The SDK currently emits session validation warnings through the root logger
-    and stream errors or unknown-tool warnings through its low-level server
-    logger. Attaching to both origins sanitizes records before any handlers see
-    them, including handlers added later. Their levels, handlers, and unrelated
-    records are unchanged.
+    The SDK emits session validation and response-ID warnings through the root
+    logger, stream errors or unknown-tool warnings through its low-level server
+    logger, and prompt errors through its FastMCP server logger. Attaching to
+    these origins sanitizes records before any handlers see them, including
+    handlers added later. Their levels, handlers, and unrelated records are
+    unchanged.
     """
     with _INSTALL_LOCK:
         logging.getLogger().addFilter(_FILTER)
         logging.getLogger("mcp.server.lowlevel.server").addFilter(_FILTER)
+        logging.getLogger("mcp.server.fastmcp.server").addFilter(_FILTER)

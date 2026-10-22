@@ -65,7 +65,7 @@ jobs:
           python -m pip install --force-reinstall --no-deps dist/*.whl
           mcp-maintainer-tools --version
           python -I scripts/environment_receipt.py --require-installed
-          python -I -m pytest -o pythonpath= --import-mode=importlib tests/test_protocol.py tests/test_cli.py -q
+          python -I -m pytest -o pythonpath= --import-mode=importlib tests/test_protocol.py tests/test_cli.py tests/test_protocol_logging.py -q
 
   dependencies:
     name: Known dependency vulnerabilities
