@@ -1,20 +1,32 @@
-name: Tests
+name: Checks
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: Python ${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
+          - os: macos-latest
+            python-version: "3.12"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -24,4 +36,51 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[dev]'
-      - run: python -m pytest -q
+      - run: python -m pytest --cov=mcp_maintainer_tools --cov-report=term-missing --cov-fail-under=90 -q
+
+  quality-and-package:
+    name: Lint, security patterns and wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install '.[dev,audit,build]'
+      - run: python -m ruff check .
+      - run: python -m ruff format --check .
+      - run: python -m bandit -q -r src
+      - run: python -m build
+      - run: python -m twine check --strict dist/*
+      - name: Exercise the built wheel
+        run: |
+          python -m pip install --force-reinstall --no-deps dist/*.whl
+          mcp-maintainer-tools --version
+          python -m pytest tests/test_protocol.py tests/test_cli.py -q
+
+  dependencies:
+    name: Known dependency vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install pip-audit==2.10.1
+      - name: Resolve runtime dependencies in a separate environment
+        run: |
+          python -m venv .audit-runtime
+          .audit-runtime/bin/python -m pip install --upgrade pip
+          .audit-runtime/bin/python -m pip install -e .
+      - name: Audit the resolved runtime and installer
+        run: |
+          site_packages="$(.audit-runtime/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+          python -m pip_audit --path "$site_packages" --skip-editable --progress-spinner off

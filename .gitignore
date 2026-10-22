@@ -6,6 +6,10 @@ __pycache__/
 .coverage
 .coverage.*
 htmlcov/
+.ruff_cache/
+.audit-runtime/
+coverage.xml
+coverage.json
 build/
 dist/
 *.egg-info/

@@ -1,0 +1,24 @@
+{
+  "name": "MCP Maintainer Tools",
+  "package": "mcp-maintainer-tools",
+  "tagline": "Evidence, within reach.",
+  "description": "Source-aware vulnerability and package research for maintainers.",
+  "colors": {
+    "ink": "#102025",
+    "paper": "#F6F5EE",
+    "teal": "#52C6B7",
+    "deepTeal": "#126B65",
+    "lime": "#DCEB88",
+    "muted": "#A5B9B6"
+  },
+  "fontFamilies": {
+    "sans": "Arial, Helvetica, sans-serif",
+    "mono": "DejaVu Sans Mono, Liberation Mono, monospace"
+  },
+  "symbol": {
+    "grid": 96,
+    "stroke": 6,
+    "minimumDisplayPx": 24,
+    "clearSpaceRatio": 0.25
+  }
+}

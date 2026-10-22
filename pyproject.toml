@@ -1,31 +1,73 @@
 [build-system]
-requires = ["setuptools>=77"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-maintainer-tools"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Read-only MCP tools for public vulnerability and package research"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{name = "Yunuscan Oruk"}]
-dependencies = ["mcp>=1.30.0,<2", "httpx>=0.28.1,<0.29"]
+keywords = ["mcp", "open-source", "vulnerabilities", "osv", "maintainer-tools"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "mcp>=1.30.0,<1.31",
+  "httpx>=0.28.1,<0.29",
+  "pydantic>=2.11.0,<3",
+]
 
 [project.optional-dependencies]
-dev = ["pytest==9.1.1", "respx==0.23.1"]
+dev = ["pytest==9.1.1", "respx==0.23.1", "pytest-cov==7.1.0", "ruff==0.17.1"]
+audit = ["bandit==1.9.4", "pip-audit==2.10.1"]
+build = ["build==1.6.1", "twine==7.0.0"]
 
 [project.scripts]
-mcp-maintainer-tools = "mcp_maintainer_tools.server:main"
+mcp-maintainer-tools = "mcp_maintainer_tools.cli:main"
 
 [project.urls]
 Repository = "https://github.com/No3214/mcp-maintainer-tools"
 Issues = "https://github.com/No3214/mcp-maintainer-tools/issues"
+Documentation = "https://github.com/No3214/mcp-maintainer-tools/blob/main/docs/USAGE.md"
+Changelog = "https://github.com/No3214/mcp-maintainer-tools/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.dynamic]
+version = {attr = "mcp_maintainer_tools.__version__"}
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "--strict-config --strict-markers"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
+[tool.coverage.run]
+branch = true
+source = ["mcp_maintainer_tools"]
+patch = ["subprocess"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

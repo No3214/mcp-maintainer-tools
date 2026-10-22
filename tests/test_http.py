@@ -9,7 +9,6 @@ import respx
 
 from mcp_maintainer_tools import http
 
-
 BASE = "https://upstream.example.test/resource"
 URL_MARKER = "synthetic-private-url"
 KEY_MARKER = "synthetic-query-credential"
@@ -86,9 +85,7 @@ def test_invalid_json_does_not_disclose_body(method):
 def test_redirect_is_rejected_without_contacting_target(method, status):
     target = f"https://redirect.example.test/secret?key={KEY_MARKER}"
     with respx.mock(assert_all_called=False) as mock:
-        source = mock.route(method=method, url=BASE).respond(
-            status, headers={"Location": target}
-        )
+        source = mock.route(method=method, url=BASE).respond(status, headers={"Location": target})
         destination = mock.route(url=target).respond(200, json={"ok": True})
         with pytest.raises(http.UpstreamError, match=f"HTTP {status}") as caught:
             getattr(http, method.lower())(BASE)
