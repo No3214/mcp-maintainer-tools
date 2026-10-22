@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-maintainer-tools"
+version = "0.1.0"
+description = "Read-only MCP tools for public vulnerability and package research"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Yunuscan Oruk"}]
+dependencies = ["mcp>=1.30.0,<2", "httpx>=0.28.1,<0.29"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "respx==0.23.1"]
+
+[project.scripts]
+mcp-maintainer-tools = "mcp_maintainer_tools.server:main"
+
+[project.urls]
+Repository = "https://github.com/No3214/mcp-maintainer-tools"
+Issues = "https://github.com/No3214/mcp-maintainer-tools/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
