@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-labelledby="title desc">
+<title id="title">MCP Maintainer Tools symbol</title>
+<desc id="desc">A pair of evidence brackets frames three records. The symbol represents source-aware research, not certification.</desc>
+<rect width="192" height="192" rx="34" fill="#F6F5EE"/><g transform="translate(18 18) scale(1.625)" fill="none" stroke-linecap="square" stroke-linejoin="miter"><path d="M28 16H12V80H28 M68 16H84V80H68" stroke="#102025" stroke-width="6"/><path d="M32 30H64 M32 48H55 M32 66H64" stroke="#126B65" stroke-width="6"/></g>
+</svg>

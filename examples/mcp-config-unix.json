@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "maintainer-tools": {
+      "command": "/absolute/path/to/mcp-maintainer-tools/.venv/bin/python",
+      "args": ["-m", "mcp_maintainer_tools"]
+    }
+  }
+}

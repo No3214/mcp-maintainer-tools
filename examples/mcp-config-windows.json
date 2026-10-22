@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "maintainer-tools": {
+      "command": "C:\\path\\to\\mcp-maintainer-tools\\.venv\\Scripts\\python.exe",
+      "args": [
+        "-m",
+        "mcp_maintainer_tools"
+      ]
+    }
+  }
+}

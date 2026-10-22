@@ -4,7 +4,6 @@ import pytest
 
 from mcp_maintainer_tools import server as s
 
-
 CVE = "CVE-2021-44228"
 CVE2 = "CVE-2021-45046"
 
@@ -13,15 +12,18 @@ CVE2 = "CVE-2021-45046"
 def no_network(monkeypatch):
     def fail(*args, **kwargs):
         raise AssertionError("Unexpected network call")
+
     monkeypatch.setattr(s, "get", fail)
     monkeypatch.setattr(s, "post", fail)
 
 
 def test_osv_query_exposes_empty_paginated_page(monkeypatch):
     calls = []
+
     def post(url, **kwargs):
         calls.append((url, kwargs))
         return {"next_page_token": "next-page"}
+
     monkeypatch.setattr(s, "post", post)
     out = s.osv_query("example", "1.0.0", page_token="previous-page")
     assert out["has_more"] and out["page_count"] == 0
@@ -41,12 +43,18 @@ def test_osv_withdrawal_and_aliases_are_preserved(monkeypatch):
 
 def test_osv_batch_preserves_per_package_pagination(monkeypatch):
     captured = {}
+
     def post(url, **kwargs):
         captured.update(kwargs["json"])
         return {"results": [{"vulns": [{"id": "TEST-1"}], "next_page_token": "a"}, {}]}
+
     monkeypatch.setattr(s, "post", post)
-    out = s.osv_batch([{"name": "one", "version": "1", "page_token": "old"},
-                       {"name": "two", "version": "2", "ecosystem": "PyPI"}])
+    out = s.osv_batch(
+        [
+            {"name": "one", "version": "1", "page_token": "old"},
+            {"name": "two", "version": "2", "ecosystem": "PyPI"},
+        ]
+    )
     first, second = out["results"]
     assert first["has_more"] and first["next_page_token"] == "a"
     assert first["vuln_ids"] == ["TEST-1"]
@@ -85,13 +93,20 @@ def test_osv_details_retain_package_specific_fixes(monkeypatch):
 
 def test_nvd_preserves_metric_attribution_and_header_auth(monkeypatch):
     captured = {}
-    record = {"id": CVE, "metrics": {"cvssMetricV31": [
-        {"source": "first.example", "cvssData": {"baseScore": 9.8}},
-        {"source": "second.example", "cvssData": {"baseScore": 10.0}},
-    ]}}
+    record = {
+        "id": CVE,
+        "metrics": {
+            "cvssMetricV31": [
+                {"source": "first.example", "cvssData": {"baseScore": 9.8}},
+                {"source": "second.example", "cvssData": {"baseScore": 10.0}},
+            ]
+        },
+    }
+
     def get(url, params, headers=None):
         captured.update({"url": url, "params": params, "headers": headers})
         return {"totalResults": 1, "vulnerabilities": [{"cve": record}]}
+
     monkeypatch.setenv("NVD_API_KEY", "synthetic-test-key")
     monkeypatch.setattr(s, "get", get)
     out = s.nvd_cve(CVE.lower())
@@ -102,10 +117,13 @@ def test_nvd_preserves_metric_attribution_and_header_auth(monkeypatch):
     assert "synthetic-test-key" not in captured["url"]
 
 
-@pytest.mark.parametrize("response", [
-    {"totalResults": 1, "vulnerabilities": []},
-    {"totalResults": 1, "vulnerabilities": [{"cve": {"id": CVE2}}]},
-])
+@pytest.mark.parametrize(
+    "response",
+    [
+        {"totalResults": 1, "vulnerabilities": []},
+        {"totalResults": 1, "vulnerabilities": [{"cve": {"id": CVE2}}]},
+    ],
+)
 def test_nvd_does_not_call_incomplete_data_not_found(monkeypatch, response):
     monkeypatch.setattr(s, "get", lambda *a, **k: response)
     with pytest.raises(s.UpstreamDataError):
@@ -119,10 +137,16 @@ def test_nvd_not_found_is_explicit(monkeypatch):
 
 def test_kev_is_refetched_and_keeps_catalog_provenance(monkeypatch):
     calls = []
+
     def get(*a, **k):
         calls.append(1)
-        return {"catalogVersion": f"v{len(calls)}", "dateReleased": "2026-10-22T00:00:00Z", "count": 1,
-                "vulnerabilities": [{"cveID": CVE, "requiredAction": "See vendor advisory"}]}
+        return {
+            "catalogVersion": f"v{len(calls)}",
+            "dateReleased": "2026-10-22T00:00:00Z",
+            "count": 1,
+            "vulnerabilities": [{"cveID": CVE, "requiredAction": "See vendor advisory"}],
+        }
+
     monkeypatch.setattr(s, "get", get)
     first = s.kev_check([CVE.lower(), CVE2])
     second = s.kev_check([CVE])
@@ -133,11 +157,17 @@ def test_kev_is_refetched_and_keeps_catalog_provenance(monkeypatch):
 
 def test_epss_pagination_and_score_date(monkeypatch):
     calls = []
+
     def get(url, params):
         calls.append(params)
         cve = [CVE, CVE2][params["offset"]]
-        return {"status": "OK", "total": 2, "offset": params["offset"],
-                "data": [{"cve": cve, "epss": "0.5", "date": "2026-10-21"}]}
+        return {
+            "status": "OK",
+            "total": 2,
+            "offset": params["offset"],
+            "data": [{"cve": cve, "epss": "0.5", "percentile": "0.9", "date": "2026-10-21"}],
+        }
+
     monkeypatch.setattr(s, "get", get)
     first = s.epss([CVE, CVE2], limit=1)
     second = s.epss([CVE, CVE2], offset=first["next_offset"], limit=1)
@@ -147,12 +177,15 @@ def test_epss_pagination_and_score_date(monkeypatch):
     assert calls[0]["cve"] == f"{CVE},{CVE2}"
 
 
-@pytest.mark.parametrize("response", [
-    {"status": "ERROR", "data": [], "total": 0, "offset": 0},
-    {"status": "OK", "data": [], "total": 1, "offset": 0},
-    {"status": "OK", "data": [{"cve": CVE2}], "total": 1, "offset": 0},
-    {"status": "OK", "data": [{"cve": CVE}], "total": 1, "offset": 5},
-])
+@pytest.mark.parametrize(
+    "response",
+    [
+        {"status": "ERROR", "data": [], "total": 0, "offset": 0},
+        {"status": "OK", "data": [], "total": 1, "offset": 0},
+        {"status": "OK", "data": [{"cve": CVE2}], "total": 1, "offset": 0},
+        {"status": "OK", "data": [{"cve": CVE}], "total": 1, "offset": 5},
+    ],
+)
 def test_epss_rejects_inconsistent_provider_results(monkeypatch, response):
     monkeypatch.setattr(s, "get", lambda *a, **k: response)
     with pytest.raises(s.UpstreamDataError):
@@ -161,12 +194,18 @@ def test_epss_rejects_inconsistent_provider_results(monkeypatch, response):
 
 def test_depsdev_does_not_guess_latest_version(monkeypatch):
     calls = []
+
     def get(url):
         calls.append(url)
         key = {"system": "NPM", "name": "@example/package"}
-        return {"packageKey": key,
-                "versions": [{"versionKey": {**key, "version": "9.9.9"}},
-                             {"versionKey": {**key, "version": "1.0.0"}}]}
+        return {
+            "packageKey": key,
+            "versions": [
+                {"versionKey": {**key, "version": "9.9.9"}},
+                {"versionKey": {**key, "version": "1.0.0"}},
+            ],
+        }
+
     monkeypatch.setattr(s, "get", get)
     out = s.depsdev_package("@example/package")
     assert out["default"] is None and out["default_version_info"] is None
@@ -177,16 +216,24 @@ def test_depsdev_does_not_guess_latest_version(monkeypatch):
 def test_depsdev_uses_only_marked_default(monkeypatch):
     calls = []
     key = {"system": "NPM", "name": "example"}
-    info = {"versionKey": {**key, "version": "1.0.0"},
-            "licenses": ["MIT"], "advisoryKeys": [{"id": "TEST-1"}]}
+    info = {
+        "versionKey": {**key, "version": "1.0.0"},
+        "licenses": ["MIT"],
+        "advisoryKeys": [{"id": "TEST-1"}],
+    }
+
     def get(url):
         calls.append(url)
         if len(calls) == 1:
-            return {"packageKey": key, "versions": [
-                {"versionKey": {**key, "version": "9.9.9"}},
-                {"versionKey": {**key, "version": "1.0.0"}, "isDefault": True},
-            ]}
+            return {
+                "packageKey": key,
+                "versions": [
+                    {"versionKey": {**key, "version": "9.9.9"}},
+                    {"versionKey": {**key, "version": "1.0.0"}, "isDefault": True},
+                ],
+            }
         return info
+
     monkeypatch.setattr(s, "get", get)
     out = s.depsdev_package("example", "NPM")
     assert out["default"] == "1.0.0"
@@ -194,19 +241,22 @@ def test_depsdev_uses_only_marked_default(monkeypatch):
     assert calls[1].endswith("/versions/1.0.0")
 
 
-@pytest.mark.parametrize("call", [
-    lambda: s.nvd_cve("not-a-cve"),
-    lambda: s.kev_check([CVE] * 101),
-    lambda: s.epss([CVE], offset=-1),
-    lambda: s.epss([CVE], limit=0),
-    lambda: s.epss([CVE], limit=True),
-    lambda: s.osv_query("", "1"),
-    lambda: s.osv_query("name", "1", page_token="\n"),
-    lambda: s.osv_batch([{"name": "one"}]),
-    lambda: s.osv_batch([{"name": "one", "version": "1", "url": "https://example.org"}]),
-    lambda: s.osv_vuln(".."),
-    lambda: s.depsdev_package("name", "https://example.org"),
-])
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda: s.nvd_cve("not-a-cve"),
+        lambda: s.kev_check([CVE] * 101),
+        lambda: s.epss([CVE], offset=-1),
+        lambda: s.epss([CVE], limit=0),
+        lambda: s.epss([CVE], limit=True),
+        lambda: s.osv_query("", "1"),
+        lambda: s.osv_query("name", "1", page_token="\n"),
+        lambda: s.osv_batch([{"name": "one"}]),
+        lambda: s.osv_batch([{"name": "one", "version": "1", "url": "https://example.org"}]),
+        lambda: s.osv_vuln(".."),
+        lambda: s.depsdev_package("name", "https://example.org"),
+    ],
+)
 def test_invalid_inputs_fail_before_network(no_network, call):
     with pytest.raises(ValueError):
         call()

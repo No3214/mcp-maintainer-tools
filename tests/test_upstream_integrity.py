@@ -4,7 +4,6 @@ import pytest
 
 from mcp_maintainer_tools import server as s
 
-
 CVE = "CVE-2021-44228"
 CVE2 = "CVE-2024-3094"
 PACKAGE_KEY = {"system": "NPM", "name": "example"}
@@ -15,6 +14,7 @@ VERSION_KEY = {**PACKAGE_KEY, "version": "1.0.0"}
 def no_network(monkeypatch):
     def fail(*args, **kwargs):
         raise AssertionError("Unexpected network call")
+
     monkeypatch.setattr(s, "get", fail)
     monkeypatch.setattr(s, "post", fail)
 
@@ -29,16 +29,19 @@ def kev_catalog(**overrides):
     return {**catalog, **overrides}
 
 
-@pytest.mark.parametrize("catalog", [
-    kev_catalog(count=1500, vulnerabilities=[]),
-    kev_catalog(count=True),
-    kev_catalog(count="1"),
-    kev_catalog(catalogVersion=""),
-    kev_catalog(dateReleased=None),
-    kev_catalog(vulnerabilities=[{"cveID": ""}]),
-    kev_catalog(vulnerabilities=[{"cveID": "not-a-cve"}]),
-    kev_catalog(count=2, vulnerabilities=[{"cveID": CVE}, {"cveID": CVE}]),
-])
+@pytest.mark.parametrize(
+    "catalog",
+    [
+        kev_catalog(count=1500, vulnerabilities=[]),
+        kev_catalog(count=True),
+        kev_catalog(count="1"),
+        kev_catalog(catalogVersion=""),
+        kev_catalog(dateReleased=None),
+        kev_catalog(vulnerabilities=[{"cveID": ""}]),
+        kev_catalog(vulnerabilities=[{"cveID": "not-a-cve"}]),
+        kev_catalog(count=2, vulnerabilities=[{"cveID": CVE}, {"cveID": CVE}]),
+    ],
+)
 def test_kev_rejects_incomplete_or_ambiguous_catalog(monkeypatch, catalog):
     monkeypatch.setattr(s, "get", lambda *a, **k: catalog)
     with pytest.raises(s.UpstreamDataError):
@@ -59,12 +62,15 @@ def test_osv_valid_terminal_token_remains_supported(monkeypatch, token):
     assert not out["has_more"] and out["next_page_token"] is None
 
 
-@pytest.mark.parametrize("record", [
-    {"id": "OSV-OTHER"},
-    {"id": ""},
-    {"id": None},
-    {"id": "OSV-OTHER", "aliases": ["OSV-REQUESTED"]},
-])
+@pytest.mark.parametrize(
+    "record",
+    [
+        {"id": "OSV-OTHER"},
+        {"id": ""},
+        {"id": None},
+        {"id": "OSV-OTHER", "aliases": ["OSV-REQUESTED"]},
+    ],
+)
 def test_osv_details_must_match_exact_requested_id(monkeypatch, record):
     monkeypatch.setattr(s, "get", lambda *a, **k: record)
     with pytest.raises(s.UpstreamDataError):
@@ -73,18 +79,23 @@ def test_osv_details_must_match_exact_requested_id(monkeypatch, record):
 
 def epss_response(**overrides):
     return {
-        "status": "OK", "total": 2, "offset": 0,
+        "status": "OK",
+        "total": 2,
+        "offset": 0,
         "data": [{"cve": CVE, "epss": "0.9", "percentile": "0.99"}],
         **overrides,
     }
 
 
-@pytest.mark.parametrize("response,limit", [
-    (epss_response(data=[{"cve": CVE}, {"cve": CVE}]), 2),
-    (epss_response(data=[{"cve": CVE}, {"cve": CVE2}]), 1),
-    (epss_response(total=0), 2),
-    (epss_response(total=3), 2),
-])
+@pytest.mark.parametrize(
+    "response,limit",
+    [
+        (epss_response(data=[{"cve": CVE}, {"cve": CVE}]), 2),
+        (epss_response(data=[{"cve": CVE}, {"cve": CVE2}]), 1),
+        (epss_response(total=0), 2),
+        (epss_response(total=3), 2),
+    ],
+)
 def test_epss_rejects_impossible_page_counts(monkeypatch, response, limit):
     monkeypatch.setattr(s, "get", lambda *a, **k: response)
     with pytest.raises(s.UpstreamDataError):
@@ -106,13 +117,16 @@ def package_response(**overrides):
     }
 
 
-@pytest.mark.parametrize("info", [
-    {"versionKey": {**VERSION_KEY, "name": "another-package"}},
-    {"versionKey": {**VERSION_KEY, "version": "9.0.0"}},
-    {"versionKey": {**VERSION_KEY, "system": "PYPI"}},
-    {"versionKey": None},
-    {},
-])
+@pytest.mark.parametrize(
+    "info",
+    [
+        {"versionKey": {**VERSION_KEY, "name": "another-package"}},
+        {"versionKey": {**VERSION_KEY, "version": "9.0.0"}},
+        {"versionKey": {**VERSION_KEY, "system": "PYPI"}},
+        {"versionKey": None},
+        {},
+    ],
+)
 def test_depsdev_details_must_match_selected_version(monkeypatch, info):
     responses = iter([package_response(), info])
     monkeypatch.setattr(s, "get", lambda *a, **k: next(responses))
@@ -120,15 +134,23 @@ def test_depsdev_details_must_match_selected_version(monkeypatch, info):
         s.depsdev_package("example")
 
 
-@pytest.mark.parametrize("package", [
-    package_response(packageKey=None),
-    package_response(packageKey={"system": "PYPI", "name": "example"}),
-    package_response(packageKey={"system": "NPM", "name": ""}),
-    package_response(versions=[{"versionKey": None, "isDefault": True}]),
-    package_response(versions=[{
-        "versionKey": {**VERSION_KEY, "name": "another-package"}, "isDefault": True,
-    }]),
-])
+@pytest.mark.parametrize(
+    "package",
+    [
+        package_response(packageKey=None),
+        package_response(packageKey={"system": "PYPI", "name": "example"}),
+        package_response(packageKey={"system": "NPM", "name": ""}),
+        package_response(versions=[{"versionKey": None, "isDefault": True}]),
+        package_response(
+            versions=[
+                {
+                    "versionKey": {**VERSION_KEY, "name": "another-package"},
+                    "isDefault": True,
+                }
+            ]
+        ),
+    ],
+)
 def test_depsdev_rejects_invalid_canonical_keys(monkeypatch, package):
     monkeypatch.setattr(s, "get", lambda *a, **k: package)
     with pytest.raises(s.UpstreamDataError):
@@ -139,14 +161,18 @@ def test_depsdev_accepts_provider_canonicalization(monkeypatch):
     key = {"system": "PYPI", "name": "some-package"}
     version_key = {**key, "version": "1.0.0"}
     info = {"versionKey": version_key, "licenses": ["MIT"]}
-    responses = iter([
-        {"packageKey": key, "versions": [{"versionKey": version_key, "isDefault": True}]},
-        info,
-    ])
+    responses = iter(
+        [
+            {"packageKey": key, "versions": [{"versionKey": version_key, "isDefault": True}]},
+            info,
+        ]
+    )
     calls = []
+
     def get(url):
         calls.append(url)
         return next(responses)
+
     monkeypatch.setattr(s, "get", get)
     out = s.depsdev_package("Some_Package", "pypi")
     assert out["package_key"] == key

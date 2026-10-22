@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" role="img" aria-labelledby="title desc">
+<title id="title">MCP Maintainer Tools — Evidence, within reach.</title>
+<desc id="desc">Seven read-only tools for source-aware vulnerability and package research. The evidence frame holds source, context and limits. Providers: OSV, NVD, CISA KEV, FIRST EPSS and deps.dev.</desc>
+<rect width="1600" height="720" fill="#102025"/>
+<path d="M80 80H1520 M80 620H1520" stroke="#A5B9B6" opacity="0.28"/>
+<text x="80" y="54" fill="#A5B9B6" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="17" letter-spacing="2">OPEN SOURCE / STDIO / PYTHON</text>
+<text x="1520" y="54" text-anchor="end" fill="#52C6B7" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="17">[ MCP MAINTAINER TOOLS ]</text>
+<text x="74" y="276" fill="#F6F5EE" font-family="Arial, Helvetica, sans-serif" font-size="170" font-weight="700" letter-spacing="-8">MCP</text>
+<text x="80" y="365" fill="#F6F5EE" font-family="Arial, Helvetica, sans-serif" font-size="71" font-weight="700" letter-spacing="-2.5">Maintainer Tools</text>
+<text x="83" y="449" fill="#52C6B7" font-family="Arial, Helvetica, sans-serif" font-size="32">Evidence, within reach.</text>
+<text x="83" y="508" fill="#A5B9B6" font-family="Arial, Helvetica, sans-serif" font-size="22">Source-aware vulnerability and package research.</text>
+<text x="83" y="542" fill="#A5B9B6" font-family="Arial, Helvetica, sans-serif" font-size="22">Seven read-only tools. Explicit limits.</text>
+<path d="M1046 160H994V526H1046 M1438 160H1490V526H1438" fill="none" stroke="#F6F5EE" stroke-width="9"/>
+<rect x="1060" y="207" width="356" height="74" fill="#52C6B7"/>
+<text x="1086" y="254" fill="#102025" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="22">SOURCE</text>
+<rect x="1060" y="306" width="268" height="74" fill="#F6F5EE"/>
+<text x="1086" y="353" fill="#102025" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="22">CONTEXT</text>
+<rect x="1060" y="405" width="356" height="74" fill="#DCEB88"/>
+<text x="1086" y="452" fill="#102025" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="22">LIMITS</text>
+<text x="80" y="672" fill="#A5B9B6" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="20">OSV</text>
+<text x="244" y="672" fill="#A5B9B6" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="20">NVD</text>
+<text x="410" y="672" fill="#A5B9B6" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="20">CISA KEV</text>
+<text x="678" y="672" fill="#A5B9B6" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="20">FIRST EPSS</text>
+<text x="1000" y="672" fill="#A5B9B6" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="20">deps.dev</text>
+<text x="1520" y="672" text-anchor="end" fill="#52C6B7" font-family="DejaVu Sans Mono, Liberation Mono, monospace" font-size="18">MAINTAINER / FIRST</text>
+</svg>
