@@ -176,7 +176,12 @@ def _read_response(response: httpx.Response, method: str, started: float, as_tex
             raise UpstreamError("Upstream response exceeded the size limit.") from None
         body.extend(chunk)
     if as_text:
-        return body.decode(response.encoding or "utf-8", errors="replace")
+        try:
+            text = body.decode(response.encoding or "utf-8", errors="replace")
+            _check_unicode_scalars(text)
+            return text
+        except (LookupError, ValueError):
+            raise UpstreamError("Upstream response was not valid text.") from None
     try:
         text = body.decode("utf-8-sig")
         _check_json_nesting(text)

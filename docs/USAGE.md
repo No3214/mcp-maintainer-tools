@@ -176,6 +176,26 @@ For a client that supports an `env` object in its server entry, this fragment op
 
 Calls can take time when an upstream service is slow or rate-limited. GET requests use at most three attempts, with two- and four-second waits between retries; POST requests are not automatically retried. I/O timeouts and response-stream checks also apply, but they are not a promise that an entire tool call completes within a fixed duration. A failed or rejected response becomes a failed tool call instead of an invented empty success. Do not rely on raw upstream error bodies or request URLs being returned for troubleshooting.
 
+### Concurrent calls and cancellation
+
+The seven tools run their synchronous lookup work outside the MCP event loop.
+Each server instance admits at most **four outstanding tool jobs**. When all
+four are occupied, another tool call receives a safe `Server is busy` error;
+wait for work to finish before retrying. Protocol ping and tool discovery remain
+available while provider I/O is blocked. This is an admission bound, not a
+provider request-rate limit or a throughput guarantee.
+
+Cancelling an MCP request can end the protocol wait promptly, but cannot stop an
+HTTP operation already running in a worker. Its slot remains occupied until that
+work completes. Closing the server stops new work; active threads can delay
+process exit. Custom embeddings should call `shutdown_workers()` when finished;
+shutdown is terminal for that server instance.
+
+Unknown top-level argument fields now fail validation instead of being ignored.
+Use `tools/list` to obtain the current schema. Unknown tool names and rejected
+argument values are omitted from official entry-point errors and the known SDK
+warning paths; arbitrary DEBUG logging is not covered by this safeguard.
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -183,6 +203,8 @@ Calls can take time when an upstream service is slow or rate-limited. GET reques
 | The client cannot start the server | Use an absolute interpreter path; confirm the environment exists and the package is installed in it. |
 | `No module named mcp_maintainer_tools` | Run the install command with the same interpreter your MCP client uses. |
 | The process starts but shows no text | This is expected for stdio before a protocol request. Use an MCP client, or `--help` for command information. |
+| `Server is busy` | Four tool jobs are still active, possibly including cancelled requests whose HTTP work has not ended. Wait for a job to finish before retrying. |
+| `Invalid tool arguments` | Compare the request with `tools/list`; remove unknown fields and use the documented JSON types and limits. |
 | HTTP or transport failure | Check provider availability and local HTTPS access. If your network requires approved proxy/custom-CA settings, explicitly enable `MCP_MAINTAINER_TOOLS_TRUST_ENV=true` and restart. Retain failures without treating them as successful lookups. |
 | The provider returns an inconsistent response | Capture a minimal, redacted reproduction. Do not remove validation merely to obtain an answer. |
 | An OSV or EPSS result is incomplete | Follow the relevant continuation metadata with the same underlying query. |

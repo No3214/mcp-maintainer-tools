@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import sys
 from datetime import timedelta
 
@@ -77,9 +78,18 @@ def _structured_result(result):
 def test_installed_stdio_contract_and_empty_queries(tmp_path):
     parameters = StdioServerParameters(
         command=sys.executable,
-        args=["-c", GUARDED_ENTRY_POINT],
+        args=["-I", "-c", GUARDED_ENTRY_POINT],
         cwd=tmp_path,
-        env={"PYTHONNOUSERSITE": "1"},
+        env={
+            "PYTHONNOUSERSITE": "1",
+            # The MCP SDK intentionally replaces the inherited environment.
+            # Forward only coverage startup settings when measuring this child.
+            **{
+                key: os.environ[key]
+                for key in ("COVERAGE_PROCESS_CONFIG", "COVERAGE_PROCESS_START")
+                if key in os.environ
+            },
+        },
     )
 
     async def exercise():

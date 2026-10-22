@@ -1,6 +1,6 @@
 # Threat model
 
-**Scope:** MCP Maintainer Tools 0.1.1, reviewed 2026-10-22.
+**Scope:** MCP Maintainer Tools 0.1.2, reviewed 2026-10-22.
 
 ## Purpose and assets
 
@@ -15,7 +15,8 @@ permissions appropriate for a public-data lookup tool.
 
 | Boundary | Data crossing it | Enforcement and limits |
 | --- | --- | --- |
-| MCP client → server | Tool name and arguments | Strict schemas, bounded fields and lists, validation before requests. The host remains responsible for authorizing calls. |
+| MCP client → server | Tool name and arguments | Strict schemas, unknown fields rejected, bounded fields and lists, validation before requests. The host remains responsible for authorizing calls. |
+| Validated MCP call → synchronous worker | Provider lookup work and request context | Four outstanding tool jobs per server instance; excess calls fail promptly. A cancelled call retains its slot until its worker actually completes. |
 | Server → provider | Package/version/ecosystem/CVE/query token; optional NVD header key | Fixed origins, verified HTTPS, encoded path segments, no redirects, no URL credentials. Queries are disclosed to providers by design. |
 | Provider → HTTP decoder | Status, headers, bytes | Streaming, 32 MiB body cap, identity encoding, strict JSON/Unicode validation, I/O limits. No absolute process-memory or wall-clock guarantee. |
 | Decoded data → tool result | Advisory text, identities, metrics, dates, pagination | Provider-specific structural and identity checks, explicit source and continuation data. Provider facts and descriptions remain untrusted. |
@@ -44,6 +45,11 @@ an upstream responsibility. CVE matching happens locally for both sources.
    Retain verified TLS and fixed tool destinations.
 6. **False completeness:** expose continuation information, preserve missing data,
    and distinguish empty local work from actual provider retrieval.
+7. **Protocol stalls and unbounded replacement work:** synchronous lookups run
+   outside the protocol event loop with bounded admission. Cancellation releases
+   the protocol waiter but cannot terminate an in-flight HTTP operation.
+8. **Unknown tool-name disclosure:** official entry points sanitize the SDK's
+   specific unknown-tool warning, and return a static unknown-tool error.
 
 ## Threats outside the implemented boundary
 
@@ -55,6 +61,11 @@ an upstream responsibility. CVE matching happens locally for both sources.
 - Multi-user hosting, HTTP authentication, tenant isolation and remote deployment.
 - A strict deadline/cancellation mechanism across every network phase, a global
   request-rate budget, or a fixed total process-memory ceiling.
+
+The worker bound applies to registered synchronous MCP calls on one server
+instance. Direct Python function calls and custom async tools do not use this
+admission path. JSON validation and output serialization still use the protocol
+event loop. Running worker threads may delay process exit after shutdown.
 
 Do not expose this stdio process as a public service without designing those
 additional controls. A missing advisory, EPSS record or KEV match is not a safety

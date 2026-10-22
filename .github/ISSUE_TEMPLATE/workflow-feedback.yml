@@ -1,0 +1,88 @@
+name: Workflow feedback
+description: Share a public maintenance task, an attempt, or a measured comparison.
+title: "[Workflow] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feedback is voluntary and this issue will be public. Unsuccessful attempts
+        and workflows that already work well with another tool are useful too.
+        See the [validation plan](https://github.com/No3214/mcp-maintainer-tools/blob/main/docs/VALIDATION.md).
+
+        Use public or synthetic examples only. Do not include credentials, private
+        package names or dependency inventories, customer/personal data, internal
+        URLs, personal filesystem paths, environment files, or unredacted logs.
+        For a security vulnerability in this server, follow
+        [SECURITY.md](https://github.com/No3214/mcp-maintainer-tools/blob/main/SECURITY.md).
+  - type: checkboxes
+    id: public_content
+    attributes:
+      label: Public content
+      options:
+        - label: I have checked that this report contains only information I can share publicly and no credentials or private package data.
+          required: true
+  - type: dropdown
+    id: experience
+    attributes:
+      label: What did you try?
+      options:
+        - I have a workflow suggestion and have not tried this server
+        - I tried setup but did not complete a task
+        - I completed or attempted one task
+        - I returned to use it for a different task on a later day
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: Maintenance question and expected answer
+      description: Describe the decision you were trying to make. A public package/version or advisory link is optional; do not substitute private identifiers.
+      placeholder: What information did you need, and what would a useful answer contain?
+    validations:
+      required: true
+  - type: textarea
+    id: baseline
+    attributes:
+      label: Existing workflow or alternative
+      description: Name the tools or provider pages you normally use, their versions if known, and whether you actually compared them on the same task.
+      placeholder: Describe what already works and any remaining difficulty. Use "not compared" if no comparison was performed.
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: Revision and environment
+      description: If tried, give the server version/commit, OS, Python, MCP client, and model/version when relevant. No machine names, paths, keys, or configuration dumps.
+      placeholder: Server commit; OS; Python version; client/model version, or not tried
+    validations:
+      required: false
+  - type: textarea
+    id: observation
+    attributes:
+      label: Observed result or proposed improvement
+      description: State what happened, what was missing or incorrect, and whether you needed manual corrections. Clearly separate observations from suggestions.
+      placeholder: Include only minimal public/synthetic examples and public source links. Do not paste raw logs or full tool transcripts.
+    validations:
+      required: true
+  - type: textarea
+    id: measurements
+    attributes:
+      label: Measurements, if collected
+      description: Optional. Report both workflows, task order/date, setup time, elapsed time, completion, corrections, and calls/cost if known. Self-reported estimates should be labeled; leave unmeasured values as "not measured".
+      placeholder: |
+        Baseline and task order:
+        Date and server revision:
+        Setup time (baseline / this server):
+        Task seconds (baseline / this server):
+        Completion and evidence errors (baseline / this server):
+        Calls/cost, if measured:
+        Learning effects, provider changes, or other limitations:
+    validations:
+      required: false
+  - type: textarea
+    id: repeat_use
+    attributes:
+      label: Would you use it again, or have you already?
+      description: A future intention and an actual later use are different evidence. If you returned, describe the different public task and date; otherwise describe what would make it useful or why you prefer an alternative.
+    validations:
+      required: false

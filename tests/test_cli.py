@@ -9,7 +9,7 @@ from mcp_maintainer_tools import __version__
 
 def _run(tmp_path, *args):
     return subprocess.run(
-        [sys.executable, "-m", "mcp_maintainer_tools", *args],
+        [sys.executable, "-I", "-m", "mcp_maintainer_tools", *args],
         cwd=tmp_path,
         check=False,
         capture_output=True,

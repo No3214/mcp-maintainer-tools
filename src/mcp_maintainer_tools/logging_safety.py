@@ -1,8 +1,9 @@
-"""Sanitize known MCP SDK validation logs without suppressing diagnostics.
+"""Sanitize known MCP SDK input logs without suppressing diagnostics.
 
-This adapter covers the installed SDK's malformed request, notification and
-stdio-message validation paths. It is not a general secret scrubber: explicitly
-enabling arbitrary SDK DEBUG logs may still expose incoming protocol messages.
+This adapter covers the installed SDK's malformed request, notification,
+stdio-message validation and unknown-tool warning paths. It is not a general
+secret scrubber: explicitly enabling arbitrary SDK DEBUG logs may still expose
+incoming protocol messages.
 """
 
 import logging
@@ -36,6 +37,10 @@ _RULES = {
             "Received exception from stream:",
             "MCP rejected an invalid stream message; input values omitted.",
         ),
+        (
+            "Tool '%s' not listed, no validation will be performed",
+            "MCP received an unknown tool name; input values omitted.",
+        ),
     ),
 }
 
@@ -66,9 +71,10 @@ def install_sdk_log_safety() -> None:
     """Install idempotent filters before starting the official stdio server.
 
     The SDK currently emits session validation warnings through the root logger
-    and raw stream errors through its low-level server logger. Attaching to both
-    origins sanitizes records before any handlers see them, including handlers
-    added later. Their levels, handlers, and unrelated records are unchanged.
+    and stream errors or unknown-tool warnings through its low-level server
+    logger. Attaching to both origins sanitizes records before any handlers see
+    them, including handlers added later. Their levels, handlers, and unrelated
+    records are unchanged.
     """
     with _INSTALL_LOCK:
         logging.getLogger().addFilter(_FILTER)
