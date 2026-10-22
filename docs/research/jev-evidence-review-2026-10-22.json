@@ -1,0 +1,209 @@
+{
+  "date": "2026-10-22",
+  "purpose": "A bounded public-evidence claim review; not an independent source search, user-demand study or model benchmark.",
+  "interface": "Authenticated TypeSafe Playground",
+  "selected_model_alias": "jev-preview",
+  "request": {
+    "state": {
+      "review_date": "2026-10-22",
+      "project": {
+        "url": "https://github.com/No3214/mcp-maintainer-tools",
+        "purpose": "Seven read-only stdio MCP tools for public OSV, NVD, KEV, EPSS and deps.dev lookups. No local repository scanning or dependency graph.",
+        "record": "The repository reports 289 automated tests for v0.1.3. Its validation plan explicitly records no independent-user pilot, repeat-use data or measured comparative workflow benefit."
+      },
+      "evidence": [
+        {
+          "id": "identity",
+          "url": "https://github.com/google/osv-scanner/issues/2009",
+          "summary": "A user reported a malware warning for a Git-pinned dependency after matching to a same-name npm registry package. A maintainer discussed commit versus package identity. The issue later closed automatically for staleness; this does not establish a fix."
+        },
+        {
+          "id": "graph",
+          "url": "https://github.com/google/osv-scanner/issues/91",
+          "summary": "Maintainers requested the path from a vulnerable transitive dependency to the direct dependency they can change. This is a dependency-graph workflow, beyond a package metadata lookup."
+        },
+        {
+          "id": "comparators",
+          "urls": [
+            "https://github.com/StacklokLabs/osv-mcp",
+            "https://github.com/cyanheads/osv-advisory-mcp-server",
+            "https://docs.vulners.com/docs/products/mcp/"
+          ],
+          "summary": "These maintained project or vendor sources document overlapping OSV queries, advisory details, MCP access, source context or structured vulnerability enrichment. Runtime comparative benchmarks were not performed."
+        },
+        {
+          "id": "epss",
+          "url": "https://www.first.org/epss/using-epss",
+          "summary": "FIRST describes EPSS as the probability of observed exploitation activity over the next 30 days across the community. Local assets, exposure and impact are additional inputs. It warns against treating EPSS multiplied by ordinal CVSS as a meaningful combined risk measure."
+        },
+        {
+          "id": "nvd",
+          "url": "https://nvd.nist.gov/developers/vulnerabilities",
+          "summary": "Current official documentation labels cveId deprecated and recommends cveIds. This review has not established that cveId currently fails."
+        }
+      ],
+      "provenance": "These are reviewer-written summaries of inspected public sources, not source quotations. Evaluate only the supplied evidence. URLs are references; no page retrieval by Jev is assumed."
+    },
+    "questions": {
+      "artifact_identity": {
+        "type": "choice",
+        "instructions": "Evaluate whether the supplied public-source evidence supports this claim: The reported OSV issue supports including registry-versus-Git artifact identity in a maintainer investigation rubric.",
+        "criteria": {
+          "supported": "The supplied evidence supports this specific claim.",
+          "contradicted": "The supplied evidence conflicts with this specific claim.",
+          "insufficient": "The supplied evidence does not establish or refute this specific claim."
+        }
+      },
+      "project_demand": {
+        "type": "choice",
+        "instructions": "Evaluate whether the supplied public-source evidence supports this claim: The supplied records demonstrate independent maintainers repeatedly choosing MCP Maintainer Tools for their work.",
+        "criteria": {
+          "supported": "The supplied evidence supports this specific claim.",
+          "contradicted": "The supplied evidence conflicts with this specific claim.",
+          "insufficient": "The supplied evidence does not establish or refute this specific claim."
+        }
+      },
+      "unique_mcp": {
+        "type": "choice",
+        "instructions": "Evaluate whether the supplied public-source evidence supports this claim: Providing OSV vulnerability lookups through MCP is a unique capability of MCP Maintainer Tools among the supplied alternatives.",
+        "criteria": {
+          "supported": "The supplied evidence supports this specific claim.",
+          "contradicted": "The supplied evidence conflicts with this specific claim.",
+          "insufficient": "The supplied evidence does not establish or refute this specific claim."
+        }
+      },
+      "dependency_path": {
+        "type": "choice",
+        "instructions": "Evaluate whether the supplied public-source evidence supports this claim: A request to identify the direct dependency responsible for a vulnerable transitive dependency requires context beyond this project's current package metadata lookup.",
+        "criteria": {
+          "supported": "The supplied evidence supports this specific claim.",
+          "contradicted": "The supplied evidence conflicts with this specific claim.",
+          "insufficient": "The supplied evidence does not establish or refute this specific claim."
+        }
+      },
+      "epss_risk": {
+        "type": "choice",
+        "instructions": "Evaluate whether the supplied public-source evidence supports this claim: An EPSS probability alone determines the risk to the user's particular deployed system.",
+        "criteria": {
+          "supported": "The supplied evidence supports this specific claim.",
+          "contradicted": "The supplied evidence conflicts with this specific claim.",
+          "insufficient": "The supplied evidence does not establish or refute this specific claim."
+        }
+      },
+      "nvd_outage": {
+        "type": "choice",
+        "instructions": "Evaluate whether the supplied public-source evidence supports this claim: NVD's deprecation notice establishes that requests using cveId are currently failing.",
+        "criteria": {
+          "supported": "The supplied evidence supports this specific claim.",
+          "contradicted": "The supplied evidence conflicts with this specific claim.",
+          "insufficient": "The supplied evidence does not establish or refute this specific claim."
+        }
+      }
+    },
+    "model_ui": "jev-preview",
+    "claims": [
+      [
+        "artifact_identity",
+        "The reported OSV issue supports including registry-versus-Git artifact identity in a maintainer investigation rubric."
+      ],
+      [
+        "project_demand",
+        "The supplied records demonstrate independent maintainers repeatedly choosing MCP Maintainer Tools for their work."
+      ],
+      [
+        "unique_mcp",
+        "Providing OSV vulnerability lookups through MCP is a unique capability of MCP Maintainer Tools among the supplied alternatives."
+      ],
+      [
+        "dependency_path",
+        "A request to identify the direct dependency responsible for a vulnerable transitive dependency requires context beyond this project's current package metadata lookup."
+      ],
+      [
+        "epss_risk",
+        "An EPSS probability alone determines the risk to the user's particular deployed system."
+      ],
+      [
+        "nvd_outage",
+        "NVD's deprecation notice establishes that requests using cveId are currently failing."
+      ]
+    ]
+  },
+  "observed_response_fields": {
+    "model": "jev-1.14.0",
+    "answers": {
+      "artifact_identity": {
+        "type": "choice",
+        "choice": "insufficient",
+        "confidence": 0.62,
+        "probabilities": {
+          "supported": 0.25,
+          "contradicted": 0,
+          "insufficient": 0.75
+        },
+        "stats": {}
+      },
+      "project_demand": {
+        "type": "choice",
+        "choice": "insufficient",
+        "confidence": 0.8,
+        "probabilities": {
+          "supported": 0,
+          "contradicted": 0.13,
+          "insufficient": 0.87
+        },
+        "stats": {}
+      },
+      "unique_mcp": {
+        "type": "choice",
+        "choice": "contradicted",
+        "confidence": 0.97,
+        "probabilities": {
+          "supported": 0,
+          "contradicted": 0.98,
+          "insufficient": 0.02
+        },
+        "stats": {}
+      },
+      "dependency_path": {
+        "type": "choice",
+        "choice": "supported",
+        "confidence": 1,
+        "probabilities": {
+          "supported": 1,
+          "contradicted": 0,
+          "insufficient": 0
+        },
+        "stats": {}
+      },
+      "epss_risk": {
+        "type": "choice",
+        "choice": "contradicted",
+        "confidence": 1,
+        "probabilities": {
+          "supported": 0,
+          "contradicted": 1,
+          "insufficient": 0
+        },
+        "stats": {}
+      },
+      "nvd_outage": {
+        "type": "choice",
+        "choice": "insufficient",
+        "confidence": 0.52,
+        "probabilities": {
+          "supported": 0,
+          "contradicted": 0.32,
+          "insufficient": 0.68
+        },
+        "stats": {}
+      }
+    },
+    "usage": {
+      "input_tokens": 1563,
+      "output_tokens": 277
+    },
+    "evaluation_time_ms": 33.736829
+  },
+  "capture_note": "Response fields transcribed from the visible Playground JSON view; other response fields, if any, were not captured. Timing is service-reported, not a controlled latency benchmark.",
+  "interpretation": "Model probabilities/confidence are its judgments about the supplied reviewer summaries. They do not measure actual market demand or prove the summaries true. Preserve the artifact_identity disagreement and the nvd_outage uncertainty; no favorable-result rerun was performed."
+}

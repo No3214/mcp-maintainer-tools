@@ -16,14 +16,18 @@ none is a demonstrated unique advantage of this project.
 
 ## Alternatives and prior art
 
-The linked maintainers' documentation was reviewed on 22 October 2026. Descriptions
-below are documented capabilities, not results of installing or benchmarking them.
+The linked maintainers' documentation and selected implementation code were
+reviewed on 22 October 2026. Descriptions below identify documented or code-level
+capabilities; these alternatives were not installed or benchmarked for this review.
 
 | Alternative | Documented overlap and comparison role |
 | --- | --- |
 | [OSV-Scanner](https://google.github.io/osv-scanner/) | Official OSV frontend for finding vulnerabilities in project dependencies, through a CLI or Go library. A baseline for dependency discovery; this server accepts explicit lookup inputs. |
+| [Grype](https://oss.anchore.com/docs/guides/vulnerability/interpreting-results/) | Documents EPSS scores/percentiles, KEV annotations, configurable result sorting, and JSON/SARIF output. Compare the maintainer's existing scanner workflow. The composite ranking is documented behavior; its effectiveness was not measured here. |
 | [Snyk Studio MCP](https://github.com/snyk/studio-mcp) | Exposes Snyk scans and findings through MCP, including dependency, code, container, and configuration scans. Compare the user's existing Snyk workflow when applicable. |
-| [cyanheads/osv-advisory-mcp-server](https://github.com/cyanheads/osv-advisory-mcp-server) | OSV package/batch/advisory tools preserve aliases, affected ranges, and truncation information; documented composition with an NVD server includes KEV context. A close comparison for evidence handling. |
+| [StacklokLabs/osv-mcp](https://github.com/StacklokLabs/osv-mcp) | Documents OSV package/version or commit queries, batch queries, advisory retrieval, and ToolHive client/container setup. A close baseline for the three OSV lookup tools; compare setup effort separately from investigation time. |
+| [cyanheads/osv-advisory-mcp-server](https://github.com/cyanheads/osv-advisory-mcp-server) | Its [advisory tool implementation](https://github.com/cyanheads/osv-advisory-mcp-server/blob/main/src/mcp-server/tools/definitions/osv-get-vulnerability.tool.ts) preserves severity attribution, withdrawn status, ordered affected-range events, and escaped advisory text, with bounded responses and revision-aware continuation. Source handling and explicit incompleteness already overlap closely with this project. |
+| [Vulners MCP](https://docs.vulners.com/docs/products/mcp/) | Documents hosted/local MCP, API-key authentication, structured bulletin lookup/search, software-version assessment, references, and exploitation/KEV context. Consider it when participants already have access; response accuracy, speed, pricing, and account eligibility were not evaluated here. |
 | [mukul975/cve-mcp-server](https://github.com/mukul975/cve-mcp-server) | Documents NVD, EPSS, KEV, and OSV tools plus combined CVE triage. Multi-source enrichment already exists; compare the shared lookup tasks without adopting its scoring claims. |
 | [gleicon/mcp-osv](https://github.com/gleicon/mcp-osv) | Provides OSV package-version queries through MCP alongside code and secret analysis. An additional overlapping OSV integration. |
 | [badchars/cve-mcp](https://github.com/badchars/cve-mcp) | Its indexed README describes NVD, EPSS, KEV, and OSV enrichment. Direct repository/API retrieval returned 404 during this review; treat it as indexed prior art, with current availability unverified. |
@@ -41,11 +45,17 @@ Use three independent maintainers outside the project author/contributor team.
 Each uses a real public maintenance question they care about; demonstrations by
 the author, bots, and simulated users do not count toward that participant goal.
 
+For package cases, record whether the subject is a published registry artifact or
+a source checkout. A shared name does not establish that they are the same
+artifact. These tools accept explicit package/version inputs; they do not query
+Git commits or determine the project's installed dependency graph or reachability.
+Record unsupported scope instead of substituting a different subject.
+
 | Task | Required deliverable | What the reviewer checks |
 | --- | --- | --- |
-| A. Investigate one exact public package version | Package/ecosystem/version, matching OSV advisory IDs, affected ranges, CVE aliases where present, and deps.dev package identity/context | Correct subject, advisory references, and explicit pagination/completeness; a package metadata lookup is not a version-specific vulnerability verdict. |
+| A. Investigate one exact public package version | Package/ecosystem/version and artifact origin, matching OSV advisory IDs, affected ranges, CVE aliases where present, and deps.dev package identity/context | Correct subject and origin, advisory references, and explicit pagination/completeness; a package metadata lookup is not a version-specific vulnerability verdict. |
 | B. Enrich three public CVE IDs | A table of NVD metric attribution, KEV membership/source, EPSS score/percentile/date, retrieval times, and unavailable results | Provider meanings remain distinct; missing records and failed lookups are not reported as evidence of safety. |
-| C. Handle incomplete evidence | A separately labeled fixture exercise with an empty OSV page plus a continuation token, and an unavailable provider | Continue or mark the result incomplete; retain known evidence and state the unavailable portion. Pin the fixture/harness before use. This is a technical exercise, not user-demand evidence. |
+| C. Handle unqueried or incomplete evidence | A separately labeled fixture set: empty input with `queried: false`, an empty OSV page plus a continuation token, and an unavailable provider | Distinguish no query from a completed lookup with no matches. Continue pages or mark the result incomplete; retain known evidence and state the unavailable portion. Pin the fixtures/harness before use. These are technical exercises, not user-demand evidence. |
 
 For A and B, compare the same inputs using the existing workflow and this server.
 Alternate which workflow runs first across participants and tasks; record order
@@ -53,9 +63,13 @@ and learning effects. Keep prompts, client/model versions, and settings constant
 when both workflows use an assistant. Run paired attempts close together, retain
 source URLs and retrieval/score dates, and flag changes in upstream data.
 
-Record setup time separately. Start each task timer when the input is shown and
-stop at the submitted answer; cap each attempt at 15 minutes. A timeout, provider
-failure, or incomplete answer remains in the results. Do not discard slow runs.
+Record existing installations and setup time separately. Before the timed tasks,
+record installation, tool discovery where applicable, and a first provider-backed
+lookup using nonempty public input. Predeclare that setup case and retain failures,
+elapsed time, and assistance needed; listing tools alone is not a successful lookup.
+Start each task timer when the input is shown and stop at the submitted answer;
+cap each attempt at 15 minutes. A timeout, provider failure, or incomplete answer
+remains in the results. Do not discard slow runs.
 Review against the retrieved provider evidence, not another model's confidence;
 hide the workflow identity from the reviewer where practical.
 
@@ -63,7 +77,8 @@ hide the workflow identity from the reviewer where practical.
 
 | Measure | Record for both workflows |
 | --- | --- |
-| Effort | Setup minutes, wall-clock task seconds, active human minutes, and manual lookups/corrections |
+| Setup | Existing installation; installation, discovery, and first provider-backed lookup outcomes, elapsed minutes, and assistance needed |
+| Effort | Wall-clock task seconds, active human minutes, and manual lookups/corrections |
 | Completion | Complete, incomplete, failed, or timed out; include reason and assistance needed |
 | Source fidelity | Count incorrect identities, unsupported claims, missing attribution/dates, and incorrectly claimed completeness against the predeclared fields |
 | Operating cost | Provider/tool calls, retries, and model usage/cost when available; otherwise `not measured` |
@@ -87,10 +102,10 @@ a new plan revision and must not retroactively turn an unfavorable result into a
 - **Revise or stop expansion:** a completed pilot misses those criteria, or a suitable existing tool serves the task without a material observed advantage. Record the reason and consider contributing upstream.
 - **Insufficient evidence:** participation, comparisons, repeat use, or measurements are missing. Keep the outcome unvalidated rather than inferring success or no demand.
 
-Wrong package/CVE identity, fabricated source attribution, or presenting incomplete
-evidence as confirmed clean is a critical source-fidelity error. Fix it and repeat
-the affected evaluation before continuing. Report every case and the small sample's
-limitations; do not generalize a pilot percentage into a guaranteed benefit.
+Wrong package/CVE identity, fabricated source attribution, or presenting unqueried
+or incomplete evidence as confirmed clean is a critical source-fidelity error.
+Fix it and repeat the affected evaluation before continuing. Report every case and
+the small sample's limitations; do not generalize a pilot percentage into a guaranteed benefit.
 
 ## Current record and voluntary feedback
 

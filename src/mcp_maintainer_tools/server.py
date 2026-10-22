@@ -295,7 +295,7 @@ def _osv_page(response: dict) -> tuple[list, str | None]:
 @mcp.tool(annotations=READ_ONLY)
 def osv_query(
     name: Text, version: Text, ecosystem: Ecosystem = "npm", page_token: PageToken | None = None
-) -> dict:
+) -> dict[str, Any]:
     """Fetch one OSV page for a package version. Repeat with next_page_token until has_more is false."""
     query = _query(name, version, ecosystem, page_token)
     url = f"{OSV}/query"
@@ -315,7 +315,7 @@ def osv_query(
 
 
 @mcp.tool(annotations=READ_ONLY)
-def osv_batch(packages: PackageQueries) -> dict:
+def osv_batch(packages: PackageQueries) -> dict[str, Any]:
     """One OSV page per package: [{name, version, ecosystem?, page_token?}], at most 100. Follow each token separately."""
     if not isinstance(packages, list) or len(packages) > 100:
         raise ValueError("Provide at most 100 packages per call")
@@ -361,7 +361,7 @@ def osv_batch(packages: PackageQueries) -> dict:
 
 
 @mcp.tool(annotations=READ_ONLY)
-def osv_vuln(vuln_id: Text) -> dict:
+def osv_vuln(vuln_id: Text) -> dict[str, Any]:
     """Get an OSV record, retaining package-specific affected ranges, fixed events, and references."""
     url = f"{OSV}/vulns/{_segment(vuln_id, 'vuln_id')}"
     record = _object(get(url), "OSV")
@@ -371,11 +371,13 @@ def osv_vuln(vuln_id: Text) -> dict:
 
 
 @mcp.tool(annotations=READ_ONLY)
-def nvd_cve(cve_id: CveId) -> dict:
+def nvd_cve(cve_id: CveId) -> dict[str, Any]:
     """Get an NVD CVE, preserving metric-source attribution. Optional NVD_API_KEY is read from the environment."""
     cve_id = _cve(cve_id)
     key = env("NVD_API_KEY", False)
-    response = _object(get(NVD, {"cveId": cve_id}, headers={"apiKey": key} if key else None), "NVD")
+    response = _object(
+        get(NVD, {"cveIds": cve_id}, headers={"apiKey": key} if key else None), "NVD"
+    )
     records = _list(response.get("vulnerabilities"), "NVD")
     total = response.get("totalResults")
     if type(total) is not int or total not in {0, 1} or total != len(records):
@@ -389,7 +391,7 @@ def nvd_cve(cve_id: CveId) -> dict:
 
 
 @mcp.tool(annotations=READ_ONLY)
-def kev_check(cve_ids: CveIds) -> dict:
+def kev_check(cve_ids: CveIds) -> dict[str, Any]:
     """Check up to 100 CVEs against a freshly fetched CISA KEV catalog. Absence is not proof of no exploitation."""
     ids = _cves(cve_ids)
     if not ids:
@@ -438,7 +440,7 @@ def kev_check(cve_ids: CveIds) -> dict:
 
 
 @mcp.tool(annotations=READ_ONLY)
-def epss(cve_ids: CveIds, offset: Offset = 0, limit: PageLimit = 100) -> dict:
+def epss(cve_ids: CveIds, offset: Offset = 0, limit: PageLimit = 100) -> dict[str, Any]:
     """Fetch one FIRST EPSS page for up to 100 CVEs. Scores estimate exploitation probability, not environment-specific risk."""
     ids = _cves(cve_ids)
     if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
@@ -494,7 +496,7 @@ def epss(cve_ids: CveIds, offset: Offset = 0, limit: PageLimit = 100) -> dict:
 
 
 @mcp.tool(annotations=READ_ONLY)
-def depsdev_package(name: Text, system: PackageSystem = "npm") -> dict:
+def depsdev_package(name: Text, system: PackageSystem = "npm") -> dict[str, Any]:
     """Get deps.dev version metadata. Only a provider-marked default is used; no latest-version guess is made."""
     system = _text(system, "system", 20).lower()
     if system not in SYSTEMS:

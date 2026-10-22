@@ -48,6 +48,10 @@ After configuring the server, ask the client to list its tools. It should expose
 
 All names, versions, and identifiers are JSON strings. Pagination arguments are JSON integers; booleans and numeric strings are not substitutes for integers. Use exact identifiers accepted by the upstream service.
 
+Successful calls provide the same result object in MCP `structuredContent` and as serialized JSON in the text content block. All seven tools advertise an object `outputSchema`; clients can consume the structured channel directly. The schema describes the object container, not every nested provider field, and does not make upstream data trusted.
+
+For Python embeddings, the exported synchronous tool functions still return dictionaries. Successfully awaiting the SDK-level `MaintainerMCP.call_tool` method returns `(content, structured)` from 0.1.4 onward; callers that previously expected only a content list must unpack that pair. Standard MCP clients receive the protocol result object as usual.
+
 | Tool | Arguments and defaults | Result notes |
 | --- | --- | --- |
 | `osv_query` | `name`, `version`, `ecosystem="npm"`, `page_token=null` | Returns one page. Use `has_more` and `next_page_token`. |
@@ -93,7 +97,23 @@ These are input examples, not current vulnerability assessments or recommendatio
 
 A useful investigation starts with a specific package version. Query OSV, follow every continuation token, and retrieve individual advisory records when affected ranges or references matter. If an advisory contains CVE aliases, those IDs can be used with NVD, KEV, and EPSS. Compare the results while retaining each provider's source and retrieval context.
 
+Confirm the package ecosystem, exact version, and artifact origin before querying. A Git dependency and a registry package with the same name are not necessarily the same artifact. These tools do not accept Git commit queries, resolve your installed dependency graph, or inspect whether vulnerable code is reachable in your application. Retain those limits when reporting applicability.
+
 NVD metrics, KEV catalog membership, and EPSS scores answer different questions. Keep the original metric attribution and score date. They do not determine exposure in your deployment or prove that a particular mitigation is effective.
+
+### Interpret prioritization signals
+
+The [FIRST guidance on using EPSS](https://www.first.org/epss/using-epss) explains how exploitation probability, confirmed exploitation, and local context contribute different information. Keep those measurements separate; multiplying EPSS by CVSS does not produce a validated risk measurement.
+
+| Signal | Reading rule |
+| --- | --- |
+| EPSS `epss` | A probability from 0 to 1 of observed exploitation activity in the wild over the next 30 days, across the observed population. It is not the probability that your particular deployment will be compromised. |
+| EPSS `percentile` | The fraction of scored vulnerabilities at or below this score. It is a rank, not another exploitation probability. |
+| EPSS `date` | The date associated with the score. Retain it alongside `retrieved_at`; fetching a record now does not make its score current. |
+| KEV membership | The fetched catalog records evidence of exploitation in the wild. Retain the entry and catalog dates and source; membership is not a live measure of attack frequency, and absence is not evidence of safety. |
+| Local applicability | Establish the actual package/version, exposure or reachability, consequences, and relevant controls separately. These lookup tools do not inspect your environment. |
+
+A missing EPSS record remains unknown, not zero probability. An empty-input call with `queried: false` supplies no new provider evidence. Preserve these states alongside any scores that were returned.
 
 ### Pagination can continue after an empty page
 

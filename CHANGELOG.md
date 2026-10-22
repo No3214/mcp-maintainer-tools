@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.1.4 — 2026-10-22
+
+### Improved
+
+- Expose an object `outputSchema` and `structuredContent` for all seven tools,
+  preserving the existing JSON text result and nested provider values. This adds
+  an optional MCP interoperability feature; the previous text-only behavior was
+  not a protocol violation.
+- Use NVD's documented `cveIds` query parameter for the existing single-CVE tool,
+  replacing deprecated `cveId` without changing input, identity checks, or output.
+
+### Verification and documentation
+
+- Require structured output in the real installed stdio contract and cover empty
+  queries and nested JSON equivalence.
+- Expand documented comparisons with Grype, Stacklok OSV MCP, and Vulners MCP;
+  distinguish artifact identity, no-query results, and first-call setup in the
+  predeclared pilot. No measured user-demand result is claimed.
+- Clarify EPSS probability, percentile, score date, KEV membership, and local
+  applicability. Record source research and one actual Jev evidence review.
+
+### Compatibility notes
+
+- Public synchronous Python tool functions still return dictionaries. Python
+  embedding code successfully awaiting the SDK-level `MaintainerMCP.call_tool` now
+  receives `(content, structured)` rather than only a content list.
+- The output schema describes a JSON object, not every nested provider field.
+  It does not establish data truth, freshness, or application-specific risk.
+
 ## 0.1.3 — 2026-10-22
 
 ### Fixed

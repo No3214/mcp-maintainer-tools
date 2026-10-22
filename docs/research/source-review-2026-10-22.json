@@ -1,0 +1,295 @@
+{
+  "review_date": "2026-10-22",
+  "repository": "https://github.com/No3214/mcp-maintainer-tools",
+  "baseline_commit": "ae51cbf814adba11f1246d44923825f0d74b8d06",
+  "method": "Three parallel research workstreams used Exa for discovery, inspected selected primary-source sections, and used official web pages or live GitHub content for targeted re-verification. Queries below are preserved from the recorded calls.",
+  "counts": {
+    "exa_queries": 14,
+    "returned_discovery_entries": 90,
+    "selected_source_review_records": 30,
+    "unique_selected_primary_urls": 29
+  },
+  "count_scope": "Only the three main Exa research workstreams. Counts exclude root follow-up searches for Jev and TypeSafe and authoritative search verification. Returned discovery entries are not independent studies or fully read pages. Selected primary URLs are deduplicated after removing a trailing slash.",
+  "queries": [
+    {
+      "workstream": "protocol_and_lifecycle",
+      "query": "Model Context Protocol Python SDK FastMCP outputSchema structuredContent tool result return annotation dict official specification",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "query": "Model Context Protocol specification stdio cancellation shutdown Python server request lifecycle official",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "query": "Model Context Protocol Python FastMCP tool annotations idempotentHint readOnlyHint openWorldHint untrusted tool descriptions security official",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "query": "Python concurrent.futures ThreadPoolExecutor cancel_futures shutdown wait running futures official asyncio cancellation",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "provider_contracts",
+      "query": "Official OSV API documentation query and querybatch pagination rules empty results next_page_token per query result order alias vulnerability record identity",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "provider_contracts",
+      "query": "Official FIRST EPSS API documentation CVE filter total offset limit date response status probability percentile latest score data pagination",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "provider_contracts",
+      "query": "Official deps.dev API v3 GetPackage response versions isDefault versionKey package name normalization Go Cargo npm PyPI NuGet RubyGems Maven",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "provider_contracts",
+      "query": "Official CISA known exploited vulnerabilities JSON schema count catalogVersion dateReleased cveID GitHub kev-data synchronization mirror feed",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "provider_contracts",
+      "query": "Official NIST NVD CVE API 2.0 documentation cveId totalResults vulnerabilities no match rejected records response schema resultsPerPage startIndex",
+      "requested_results": 5,
+      "returned_results": 5
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "query": "GitHub OSV Scanner maintainer issue discussion vulnerability findings false positives dependency version reachability transitive dependencies triage",
+      "requested_results": 10,
+      "returned_results": 10
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "query": "official Grype Trivy vulnerability prioritization EPSS CISA KEV exploitability risk prioritization documentation",
+      "requested_results": 10,
+      "returned_results": 10
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "query": "official vulnerability MCP server OSV advisory NVD EPSS KEV source provenance structured output pagination read only tools",
+      "requested_results": 10,
+      "returned_results": 10
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "query": "GitHub MCP vulnerability scanner stdio installation Python uvx npx environment integration issue Snyk Studio OSV server",
+      "requested_results": 10,
+      "returned_results": 10
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "query": "Grype official documentation risk sorting EPSS KEV priority vulnerability findings",
+      "requested_results": 5,
+      "returned_results": 5
+    }
+  ],
+  "selected_primary_source_records": [
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools",
+      "reviewed_sections": [
+        "Structured Content",
+        "Output Schema",
+        "Security Considerations"
+      ]
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle",
+      "reviewed_sections": [
+        "Shutdown",
+        "Timeouts"
+      ]
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/cancellation",
+      "reviewed_sections": [
+        "Behavior Requirements",
+        "Timing Considerations"
+      ]
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/v1.30.0/src/mcp/server/fastmcp/utilities/func_metadata.py",
+      "reviewed_sections": [
+        "FuncMetadata.convert_result",
+        "func_metadata",
+        "_try_create_model_and_schema",
+        "_create_dict_model"
+      ]
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/v1.30.0/src/mcp/server/fastmcp/server.py",
+      "reviewed_sections": [
+        "_setup_handlers",
+        "list_tools"
+      ]
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://docs.python.org/3.12/library/concurrent.futures.html",
+      "reviewed_sections": [
+        "Executor.shutdown",
+        "ThreadPoolExecutor",
+        "Future.cancel"
+      ]
+    },
+    {
+      "workstream": "protocol_and_lifecycle",
+      "url": "https://blog.modelcontextprotocol.io/posts/2026-03-16-tool-annotations/",
+      "reviewed_sections": [
+        "What Tool Annotations Are"
+      ]
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://google.github.io/osv.dev/post-v1-query/",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://google.github.io/osv.dev/post-v1-querybatch/",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://google.github.io/osv.dev/faq/",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://api.first.org/epss/",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://api.first.org/",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://www.first.org/epss/data",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://docs.deps.dev/api/v3/",
+      "retrieval_scope": "Retrieved with 50,000 character cap; relevant normalization, coverage, GetPackage and GetVersion sections read before cutoff."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://raw.githubusercontent.com/google/deps.dev/main/api/v3/api.proto",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://raw.githubusercontent.com/cisagov/kev-data/develop/known_exploited_vulnerabilities_schema.json",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://github.com/cisagov/kev-data",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "provider_contracts",
+      "url": "https://nvd.nist.gov/developers/vulnerabilities",
+      "retrieval_scope": "Retrieved; relevant contract sections inspected."
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://github.com/google/osv-scanner/issues/2009",
+      "source_type": "firsthand issue with maintainer reply",
+      "review_context": "Created 2025-07-01; closed by stale automation 2025-09-13; live page verified 2026-10-22"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://github.com/google/osv-scanner/issues/91",
+      "source_type": "firsthand issue and workflow comments",
+      "review_context": "Created 2022-12-20; updated 2025-07-15; current open/backlog state and comments verified through GitHub API 2026-10-22"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://github.com/google/osv-scanner/discussions/1529",
+      "source_type": "firsthand integration discussion plus maintainer resolution",
+      "review_context": "Discussion opened 2025-01-24; no-lockfile request April 2025; maintainer resolution posted 2025-06-16"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog/reducing-significant-risk-known-exploited-vulnerabilities",
+      "source_type": "primary regulator guidance",
+      "review_context": "Reviewed 2026-10-22; page publication date not established"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://www.first.org/epss/using-epss",
+      "source_type": "primary model-owner guidance",
+      "review_context": "Live page reviewed 2026-10-22; publication date not established"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://oss.anchore.com/docs/guides/vulnerability/interpreting-results/",
+      "source_type": "official scanner documentation; effectiveness statements are vendor claims",
+      "review_context": "Page last modified 2026-10-21; live verified 2026-10-22"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://google.github.io/osv.dev/post-v1-querybatch/",
+      "source_type": "official upstream API contract",
+      "review_context": "Live verified 2026-10-22; publication date not established"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://github.com/StacklokLabs/osv-mcp",
+      "source_type": "official project README",
+      "review_context": "Repository created 2025-05-05; current README live verified 2026-10-22"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://github.com/snyk/studio-mcp",
+      "source_type": "official vendor-maintained project README",
+      "review_context": "Current README live verified 2026-10-22"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://docs.snyk.io/agent-security/agentic-security-with-snyk-studio/troubleshooting",
+      "source_type": "official vendor troubleshooting guidance",
+      "review_context": "Search indicates 2026-10-12; live current page verified 2026-10-22"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://github.com/cyanheads/osv-advisory-mcp-server/blob/main/src/mcp-server/tools/definitions/osv-get-vulnerability.tool.ts",
+      "source_type": "direct implementation evidence",
+      "review_context": "Live GitHub API file verified 2026-10-22; blob SHA 4b12e7f63ac003b9c6a4695caca47eba35e15686"
+    },
+    {
+      "workstream": "maintainer_workflows_and_alternatives",
+      "url": "https://docs.vulners.com/docs/products/mcp/",
+      "source_type": "official vendor product documentation",
+      "review_context": "Page dated 2026-08-07; live verified 2026-10-22"
+    }
+  ],
+  "limitations": [
+    "No independent-user pilot, outreach, repeat-use measurement, willingness-to-pay data or competitor runtime benchmark was performed.",
+    "Only relevant sections were reviewed. MCP SDK source fetches were character-capped at 20,000 characters and deps.dev documentation at 50,000; this is not a full-source review.",
+    "The CISA guidance page was retrieved through Exa and authoritative search; a separate direct open returned HTTP 403.",
+    "Cached Exa content for cyanheads was superseded by live GitHub source (blob 4b12e7f63ac003b9c6a4695caca47eba35e15686).",
+    "Jev was executed separately as an evidence-claim review using supplied summaries. Its request and observed response fields are in jev-evidence-review-2026-10-22.json. It is not counted as a source search or a demand experiment.",
+    "MiroFish and a formal Codex Security Cloud audit were not run. Agent workstreams do not imply distinct underlying model providers."
+  ]
+}
