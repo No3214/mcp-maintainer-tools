@@ -70,8 +70,8 @@ def _structured_result(result):
     assert len(text) == 1
     decoded = json.loads(text[0])
     assert isinstance(decoded, dict)
-    if result.structuredContent is not None:
-        assert decoded == result.structuredContent
+    assert isinstance(result.structuredContent, dict)
+    assert decoded == result.structuredContent
     return decoded
 
 
@@ -122,8 +122,8 @@ def test_installed_stdio_contract_and_empty_queries(tmp_path):
                                 name,
                                 parameter,
                             )
-                        if tool.outputSchema is not None:
-                            assert tool.outputSchema["type"] == "object", name
+                        assert tool.outputSchema is not None, name
+                        assert tool.outputSchema["type"] == "object", name
 
                     epss_schema = tools["epss"].inputSchema["properties"]
                     assert epss_schema["offset"]["default"] == 0
@@ -137,6 +137,12 @@ def test_installed_stdio_contract_and_empty_queries(tmp_path):
                     assert osv["provider"] == "OSV"
                     assert osv["source_url"] == "https://api.osv.dev/v1/querybatch"
                     assert osv["results"] == []
+
+                    kev = _structured_result(await session.call_tool("kev_check", {"cve_ids": []}))
+                    assert kev["provider"] == "CISA KEV"
+                    assert kev["queried"] is False
+                    assert kev["hits"] == {}
+                    assert kev["not_in_kev"] == []
 
                     epss = _structured_result(await session.call_tool("epss", {"cve_ids": []}))
                     assert epss == {

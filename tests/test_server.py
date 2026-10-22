@@ -112,7 +112,7 @@ def test_nvd_preserves_metric_attribution_and_header_auth(monkeypatch):
     out = s.nvd_cve(CVE.lower())
     assert out["record"] == record and out["found"]
     assert captured["headers"] == {"apiKey": "synthetic-test-key"}
-    assert captured["params"] == {"cveId": CVE}
+    assert captured["params"] == {"cveIds": CVE}
     assert "synthetic-test-key" not in str(out)
     assert "synthetic-test-key" not in captured["url"]
 

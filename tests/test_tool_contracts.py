@@ -1,6 +1,7 @@
 """Exercise tool validation through MCP and against malformed provider records."""
 
 import asyncio
+import json
 import traceback
 
 import pytest
@@ -337,3 +338,43 @@ def test_mcp_requires_declared_json_container_types(tool, arguments):
 
 def test_protocol_metadata_uses_application_version():
     assert s.mcp._mcp_server.create_initialization_options().server_version == __version__
+
+
+@pytest.mark.parametrize(
+    "tool,arguments",
+    [
+        ("osv_batch", {"packages": []}),
+        ("kev_check", {"cve_ids": []}),
+        ("epss", {"cve_ids": []}),
+    ],
+)
+def test_empty_queries_return_equivalent_text_and_structured_content(tool, arguments):
+    result = asyncio.run(s.mcp.call_tool(tool, arguments))
+    assert isinstance(result, tuple)
+    content, structured = result
+    assert len(content) == 1
+    assert content[0].type == "text"
+    assert structured["queried"] is False
+    assert json.loads(content[0].text) == structured
+
+
+def test_structured_output_preserves_nested_provider_data(monkeypatch):
+    record = {
+        "id": "TEST-1",
+        "summary": "Unicode package \U0001f680",
+        "affected": [
+            {
+                "package": {"name": "example", "ecosystem": "npm"},
+                "ranges": [{"type": "SEMVER", "events": [{"introduced": "0"}, {"fixed": "1.2"}]}],
+            }
+        ],
+        "database_specific": {"reviewed": True, "score": 0.75, "count": 2, "note": None},
+    }
+    monkeypatch.setattr(s, "get", lambda *args, **kwargs: record)
+    result = asyncio.run(s.mcp.call_tool("osv_vuln", {"vuln_id": "TEST-1"}))
+    assert isinstance(result, tuple)
+    content, structured = result
+    assert len(content) == 1
+    assert content[0].type == "text"
+    assert structured["record"] == record
+    assert json.loads(content[0].text) == structured
