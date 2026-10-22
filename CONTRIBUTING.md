@@ -37,13 +37,22 @@ These examples use the macOS/Linux interpreter path; substitute the Windows envi
 Wheel verification must import the installed artifact instead of the source
 checkout. After installing the wheel non-editably, run
 `python -I scripts/environment_receipt.py --require-installed` and
-`python -I -m pytest -o pythonpath= --import-mode=importlib tests/test_protocol.py tests/test_cli.py -q`
+`python -I -m pytest -o pythonpath= --import-mode=importlib tests/test_protocol.py tests/test_cli.py tests/test_protocol_logging.py -q`
 with that environment's interpreter. The receipt records dependency versions,
 package origin, and archive hashes without dumping credentials. It is evidence of
 one resolved environment, not a dependency lock file.
 
 The `Required checks` job accepts only successful test, package/quality, and
 dependency jobs. Changes to the matrix must preserve that fail-closed aggregate.
+
+### Merge requirements
+
+The `main` branch protection was verified on 2026-10-22: changes must use a pull
+request, be up to date with the base branch, and pass `Required checks` from
+GitHub Actions. The same requirements apply to administrators. Force pushes and
+branch deletion are disabled. A mandatory human approval is not configured;
+maintainers remain responsible for reviewing the change and its evidence.
+Current GitHub settings are authoritative if they change after this observation.
 
 ### Audit runtime dependencies separately
 
@@ -61,7 +70,7 @@ The audit contacts public advisory services and checks known dependency vulnerab
 
 ### Review SDK upgrades explicitly
 
-The runtime dependency is constrained to `mcp>=1.30.0,<1.31`. The server's typed-input handling, application-version reporting, worker dispatch, and error/log adapters depend on behavior reviewed in that series. Before widening the range, review those integration points and rerun schema, validation-redaction, handshake, CLI, cancellation, saturation, and stdio regression tests against the proposed SDK. A successful dependency resolution alone is not upgrade validation.
+The runtime dependency is constrained to `mcp>=1.30.0,<1.31`. The server's typed-input handling, application-version reporting, worker dispatch, and error/log adapters depend on behavior reviewed in that series. Before widening the range, review those integration points and rerun schema, validation-redaction, handshake, CLI, cancellation, saturation, non-tool protocol logging, and stdio regression tests against the proposed SDK. A successful dependency resolution alone is not upgrade validation.
 
 For network configuration changes, preserve the default-disabled environment trust setting. `MCP_MAINTAINER_TOOLS_TRUST_ENV` accepts only exact lowercase `true` or `false`; opting in must retain TLS verification and use the trusted process environment. Cover both modes and invalid values in deterministic tests; do not silently turn it on when a request fails.
 

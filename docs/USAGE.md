@@ -193,8 +193,17 @@ shutdown is terminal for that server instance.
 
 Unknown top-level argument fields now fail validation instead of being ignored.
 Use `tools/list` to obtain the current schema. Unknown tool names and rejected
-argument values are omitted from official entry-point errors and the known SDK
-warning paths; arbitrary DEBUG logging is not covered by this safeguard.
+argument values are omitted from official entry-point tool errors and the known
+SDK validation diagnostics.
+
+The official console and `python -m` entry points also omit caller-supplied prompt
+names and unrecognized response IDs from the SDK's default error/warning logs,
+including cached exception details. This is a targeted adapter for the reviewed
+SDK paths, not a general secret scrubber. Client-facing SDK prompt/resource errors
+can still repeat that same caller's supplied values; explicit SDK DEBUG protocol
+dumps can also expose inputs. Custom embeddings must call
+`install_sdk_log_safety()` from `mcp_maintainer_tools.logging_safety` before starting
+the server to install these log filters.
 
 ## Troubleshooting
 
