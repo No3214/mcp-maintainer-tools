@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.5 — 2026-10-23
+
+### Fixed
+
+- `depsdev_package` no longer rejects valid crates whose requested spelling
+  differs from the published one in case or `-`/`_` (`Serde`, `proc_macro2`,
+  `serde-json`). Distinct crates such as `serde` and `serde_json` are still
+  rejected as a mismatched identity.
+- `osv_vuln` returns `found: false` when OSV answers an unknown ID with HTTP
+  404 and its documented not-found code (`{"code": 5}`), instead of an error
+  indistinguishable from an outage. Results now also carry `id` and `found`.
+  Route-level 404s, oversized or malformed 404 bodies, and every other status
+  still fail. At most 1 KiB of the 404 body is read.
+
+### Verification
+
+- Both defects were found by a live run against all five providers on
+  2026-10-23 (22 calls) and reproduced offline as regressions first.
+  Automated tests remain offline.
+- The live run also observed the canonical CISA KEV feed answering HTTP 403 to
+  this client, so `kev_check` used the documented official mirror
+  (`fallback_used: true`). No code change; provenance is reported as designed.
+
 ## 0.1.4 — 2026-10-22
 
 ### Improved
