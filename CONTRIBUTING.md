@@ -86,6 +86,8 @@ For changes to upstream behavior, cite the provider's official documentation. Ch
 
 Tests must be deterministic and must not need live provider access or an API key. Use minimal mocked responses that exercise the behavior being changed. Include relevant error cases, malformed data, pagination, and identity mismatches.
 
+Provider behavior can change without any change here. `python scripts/live_smoke.py` calls every tool once against the real public APIs with fixed public identifiers and checks stable facts (exit 1 on drift; a provider that is only unavailable is reported but does not fail unless `--strict`). The [Live provider drift](.github/workflows/live-drift.yml) workflow runs it weekly and on demand. It is not a required check.
+
 A useful regression test fails before the fix and passes afterward. Avoid assertions that only repeat implementation details. The protocol test checks initialization, tool listing, and tool invocation through a real stdio MCP exchange; keep this boundary covered when changing schemas or tool registration.
 
 Use public, minimal sample data and respect third-party licenses and attribution when adding fixtures. Label invented examples as illustrative. Do not add private dependency inventories, personal filesystem paths, credentials, environment files, or unredacted operational logs.

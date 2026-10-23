@@ -1,0 +1,36 @@
+name: Live provider drift
+
+# Offline tests cannot see provider changes. This calls every tool once against
+# the real public APIs with fixed public identifiers. It is not a required check:
+# a provider outage must not block pull requests.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  live:
+    name: Live provider smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Trust floor (eMudhra/emSign distrust, pip>=26.2.2 + certifi>=2026.10.19)
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
+          python -c "import pip._vendor.certifi as c; v=c.__version__; print('pip vendored certifi', v); assert tuple(map(int, v.split('.'))) >= (2026, 10, 19), v"
+      - run: python -m pip install .
+      - run: python scripts/live_smoke.py
