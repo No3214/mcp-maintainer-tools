@@ -166,10 +166,24 @@ def _is_not_found(response: httpx.Response, started: float, code: int) -> bool:
         if len(body) > MAX_NOT_FOUND_BYTES:
             return False
     try:
-        value = jsonlib.loads(body.decode("utf-8"), object_pairs_hook=_unique_object)
+        value = _strict_json(body)
     except (ValueError, UnicodeError, RecursionError):
         return False
     return isinstance(value, dict) and type(value.get("code")) is int and value["code"] == code
+
+
+def _strict_json(body: bytes):
+    """Decode JSON with the same rules for every provider body this client reads."""
+    text = body.decode("utf-8-sig")
+    _check_json_nesting(text)
+    result = jsonlib.loads(
+        text,
+        object_pairs_hook=_unique_object,
+        parse_constant=_reject_constant,
+        parse_float=_finite_float,
+    )
+    _check_unicode_scalars(result)
+    return result
 
 
 def _read_response(
@@ -224,16 +238,7 @@ def _read_response(
         except (LookupError, ValueError):
             raise UpstreamError("Upstream response was not valid text.") from None
     try:
-        text = body.decode("utf-8-sig")
-        _check_json_nesting(text)
-        result = jsonlib.loads(
-            text,
-            object_pairs_hook=_unique_object,
-            parse_constant=_reject_constant,
-            parse_float=_finite_float,
-        )
-        _check_unicode_scalars(result)
-        return result
+        return _strict_json(body)
     except (ValueError, UnicodeError, RecursionError):
         raise UpstreamError("Upstream response was not valid JSON.") from None
 
