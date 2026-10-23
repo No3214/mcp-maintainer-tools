@@ -254,7 +254,7 @@ def test_raw_asyncio_cancellation_does_not_admit_replacement_workers(monkeypatch
     app = s.MaintainerMCP("cancellation-test")
     app.add_tool(s.osv_vuln)
 
-    def fake_get(url):
+    def fake_get(url, **_):
         with lock:
             started.append(url)
         assert release.wait(5), "Test provider release timed out"
@@ -326,7 +326,7 @@ def test_thread_start_failure_cancels_unreturned_job_and_closes_admission(monkey
     app.add_tool(s.osv_vuln)
     requests = []
 
-    def fake_get(url):
+    def fake_get(url, **_):
         requests.append(url)
         return {"id": url.rsplit("/", 1)[1]}
 

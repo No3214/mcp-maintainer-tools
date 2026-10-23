@@ -56,11 +56,11 @@ For Python embeddings, the exported synchronous tool functions still return dict
 | --- | --- | --- |
 | `osv_query` | `name`, `version`, `ecosystem="npm"`, `page_token=null` | Returns one page. Use `has_more` and `next_page_token`. |
 | `osv_batch` | `packages`: up to 100 objects containing `name`, `version`, optional `ecosystem`, and optional `page_token` | Each result has its own continuation metadata. Unknown object keys are rejected. |
-| `osv_vuln` | `vuln_id` | Returns the matching advisory in `record`; affected ranges remain tied to their packages. |
+| `osv_vuln` | `vuln_id` | Returns the matching advisory in `record`; affected ranges remain tied to their packages. IDs are case-sensitive. `found` is `false` only when OSV answers HTTP 404 with its documented not-found code; other 404s and errors still fail. |
 | `nvd_cve` | `cve_id` | Normalizes CVE capitalization. `found` distinguishes a returned record from absence. |
 | `kev_check` | `cve_ids`: up to 100 IDs | Deduplicates CVE IDs, fetches the catalog, and matches locally. Reports the actual and canonical source URLs plus whether fallback was used. |
 | `epss` | `cve_ids`: up to 100 IDs, `offset=0`, `limit=100` | `offset` must be nonnegative; `limit` must be 1–100. The joined CVE query may not exceed 2,000 characters. |
-| `depsdev_package` | `name`, `system="npm"` | Supported systems: `npm`, `pypi`, `go`, `cargo`, `maven`, `nuget`, `rubygems`. |
+| `depsdev_package` | `name`, `system="npm"` | Supported systems: `npm`, `pypi`, `go`, `cargo`, `maven`, `nuget`, `rubygems`. The returned package must match the request after the provider's name rules: PEP 503 for PyPI, lowercase for NuGet, and case-insensitive with `-` equal to `_` for Cargo. Other systems must match exactly. |
 
 Text inputs must be nonempty and free of control characters. Package names, versions, and OSV advisory identifiers are limited to 1,000 characters, OSV ecosystems to 100, and OSV continuation tokens to 8,192. CVE identifiers are limited to 64 characters and use `CVE-YYYY-NNNN` with at least four final digits. Relative path segments `.` and `..` are not accepted where an identifier forms a URL path segment.
 

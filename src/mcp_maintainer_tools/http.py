@@ -26,6 +26,8 @@ MAX_RESPONSE_BYTES = 32 * 1024 * 1024
 # while waiting for headers. HTTPX also enforces per-operation I/O timeouts.
 MAX_RESPONSE_SECONDS = 45.0
 MAX_JSON_DEPTH = 64
+# A provider's documented not-found body is tiny; read no more than this.
+MAX_NOT_FOUND_BYTES = 1024
 _SURROGATE = re.compile(r"[\ud800-\udfff]")
 _client = None
 _client_lock = Lock()
@@ -37,6 +39,10 @@ class UpstreamError(RuntimeError):
 
 class UpstreamUnavailable(UpstreamError):
     """A GET availability failure permits an explicit, fixed-source fallback."""
+
+
+class UpstreamNotFound(UpstreamError):
+    """A GET 404 whose small JSON body carries the caller's documented not-found code."""
 
 
 class _NoCookies(DefaultCookiePolicy):
@@ -144,7 +150,42 @@ def _check_unicode_scalars(value):
             _check_unicode_scalars(item)
 
 
-def _read_response(response: httpx.Response, method: str, started: float, as_text: bool = False):
+def _is_not_found(response: httpx.Response, started: float, code: int) -> bool:
+    """Read at most MAX_NOT_FOUND_BYTES of an identity-encoded 404 body.
+
+    Only an object whose integer "code" equals the caller's documented value
+    counts. Routing errors, proxies and oversized or malformed bodies do not.
+    """
+    if response.headers.get("content-encoding", "identity").strip().lower() != "identity":
+        return False
+    body = bytearray()
+    for chunk in response.iter_raw():
+        if monotonic() - started > MAX_RESPONSE_SECONDS:
+            return False
+        body.extend(chunk)
+        if len(body) > MAX_NOT_FOUND_BYTES:
+            return False
+    try:
+        value = jsonlib.loads(body.decode("utf-8"), object_pairs_hook=_unique_object)
+    except (ValueError, UnicodeError, RecursionError):
+        return False
+    return isinstance(value, dict) and type(value.get("code")) is int and value["code"] == code
+
+
+def _read_response(
+    response: httpx.Response,
+    method: str,
+    started: float,
+    as_text: bool = False,
+    not_found_code: int | None = None,
+):
+    if (
+        response.status_code == 404
+        and method == "GET"
+        and not_found_code is not None
+        and _is_not_found(response, started, not_found_code)
+    ):
+        raise UpstreamNotFound("Upstream reported that the requested record does not exist.")
     if not 200 <= response.status_code < 300:
         # Do not call raise_for_status(): HTTPStatusError includes the URL.
         error_class = UpstreamError
@@ -197,14 +238,18 @@ def _read_response(response: httpx.Response, method: str, started: float, as_tex
         raise UpstreamError("Upstream response was not valid JSON.") from None
 
 
-def get(url, params=None, headers=None, retries=2, as_text=False):
+def get(url, params=None, headers=None, retries=2, as_text=False, not_found_code=None):
     """GET with at most two retries for transient status or transport errors.
 
     Redirects are rejected. Retry waits are two seconds, then four seconds;
     caller-supplied retry counts are bounded to the inclusive range 0..2.
+    With not_found_code, a 404 whose small JSON body has that integer "code"
+    raises UpstreamNotFound; every other error keeps its usual class.
     """
     if type(retries) is not int:
         raise ValueError("retries must be an integer") from None
+    if not_found_code is not None and type(not_found_code) is not int:
+        raise ValueError("not_found_code must be an integer") from None
     url = _https_url(url)
     retry_count = min(max(retries, 0), MAX_GET_RETRIES)
     for attempt in range(retry_count + 1):
@@ -214,7 +259,7 @@ def get(url, params=None, headers=None, retries=2, as_text=False):
                 "GET", url, params=params, headers=headers, follow_redirects=False
             ) as response:
                 if response.status_code not in RETRYABLE_STATUSES or attempt == retry_count:
-                    return _read_response(response, "GET", started, as_text)
+                    return _read_response(response, "GET", started, as_text, not_found_code)
         except httpx.TransportError:
             if attempt == retry_count:
                 raise UpstreamUnavailable("Upstream GET failed due to a transport error.") from None

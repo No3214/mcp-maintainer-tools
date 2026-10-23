@@ -71,7 +71,7 @@ By default, the transport ignores environment proxy and custom-CA settings. If y
 | --- | --- | --- |
 | `osv_query` | Package `name`, `version`, optional `ecosystem` and `page_token` | One page of matching advisories, identifiers, and continuation metadata. |
 | `osv_batch` | Up to 100 package objects | One page of advisory identifiers per package, with independent continuation tokens. |
-| `osv_vuln` | `vuln_id` | The OSV record, retaining package-specific affected ranges and references. |
+| `osv_vuln` | `vuln_id` | The OSV record, retaining package-specific affected ranges and references, or explicit absence when OSV reports the ID as unknown. |
 | `nvd_cve` | `cve_id` | The NVD CVE record, preserving attribution for its metrics, or explicit absence. |
 | `kev_check` | Up to 100 `cve_ids` | Matches against a fetched CISA KEV catalog, with catalog metadata and the actual source used. |
 | `epss` | Up to 100 `cve_ids`, optional `offset` and `limit` | A page of FIRST EPSS scores and continuation metadata. |
