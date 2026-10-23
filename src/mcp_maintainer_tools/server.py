@@ -19,13 +19,15 @@ from mcp.types import ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from . import __version__
-from .http import UpstreamUnavailable, env, get, post
+from .http import UpstreamNotFound, UpstreamUnavailable, env, get, post
 
 OSV = "https://api.osv.dev/v1"
 NVD = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 KEV = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 KEV_MIRROR = "https://raw.githubusercontent.com/cisagov/kev-data/develop/known_exploited_vulnerabilities.json"
 EPSS = "https://api.first.org/data/v1/epss"
+# OSV's API returns gRPC NOT_FOUND (code 5) in the JSON body of an unknown-ID 404.
+OSV_NOT_FOUND_CODE = 5
 DEPS = "https://api.deps.dev/v3"
 SYSTEMS = {"npm", "pypi", "go", "cargo", "maven", "nuget", "rubygems"}
 MAX_TOOL_WORKERS = 4
@@ -244,6 +246,15 @@ def _canonical_package_name(name: str, system: str) -> str:
     return name
 
 
+def _same_package(returned: str, requested: str, system: str) -> bool:
+    if system == "cargo":
+        # crates.io names are case-insensitive and treat "-" and "_" as one
+        # crate; deps.dev returns the published spelling, e.g. proc_macro2 ->
+        # proc-macro2. Distinct crates such as serde and serde_json still differ.
+        return returned.lower().replace("-", "_") == requested.lower().replace("-", "_")
+    return returned == _canonical_package_name(requested, system)
+
+
 def _epss_score(value, field: str) -> None:
     if type(value) not in {str, int, float}:
         raise UpstreamDataError(f"FIRST EPSS returned an invalid {field}")
@@ -362,12 +373,16 @@ def osv_batch(packages: PackageQueries) -> dict[str, Any]:
 
 @mcp.tool(annotations=READ_ONLY)
 def osv_vuln(vuln_id: Text) -> dict[str, Any]:
-    """Get an OSV record, retaining package-specific affected ranges, fixed events, and references."""
+    """Get an OSV record, retaining package-specific affected ranges, fixed events, and references. IDs are case-sensitive; found is false only when OSV reports the ID as unknown."""
     url = f"{OSV}/vulns/{_segment(vuln_id, 'vuln_id')}"
-    record = _object(get(url), "OSV")
+    try:
+        response = get(url, not_found_code=OSV_NOT_FOUND_CODE)
+    except UpstreamNotFound:
+        return {**_source("OSV", url), "id": vuln_id, "found": False}
+    record = _object(response, "OSV")
     if record.get("id") != vuln_id:
         raise UpstreamDataError("OSV returned a record for an unexpected vulnerability ID")
-    return {**_source("OSV", url), "record": record}
+    return {**_source("OSV", url), "id": vuln_id, "found": True, "record": record}
 
 
 @mcp.tool(annotations=READ_ONLY)
@@ -506,7 +521,7 @@ def depsdev_package(name: Text, system: PackageSystem = "npm") -> dict[str, Any]
     package_key = _deps_key(package.get("packageKey"))
     if package_key["system"] != system.upper():
         raise UpstreamDataError("deps.dev returned an unexpected package system")
-    if package_key["name"] != _canonical_package_name(name, system):
+    if not _same_package(package_key["name"], name, system):
         raise UpstreamDataError("deps.dev returned an unexpected package identity")
     versions = _list(package.get("versions", []), "deps.dev")
     defaults = []
