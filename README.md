@@ -2,13 +2,25 @@
 
 # MCP Maintainer Tools
 
-**Evidence, within reach.** Seven read-only [Model Context Protocol](https://modelcontextprotocol.io/) tools for researching package vulnerabilities, CVE records, known exploitation, exploit probability, and package metadata.
+**Investigate package advisories from your MCP client, with the sources in view.**
+
+Seven read-only [Model Context Protocol](https://modelcontextprotocol.io/) tools connect your client to **OSV, NVD, CISA KEV, FIRST EPSS, and deps.dev**. Retrieve advisory records, inspect known-exploitation context and exploit-probability scores, and keep provider meanings separate.
 
 [![Checks](https://github.com/No3214/mcp-maintainer-tools/actions/workflows/tests.yml/badge.svg)](https://github.com/No3214/mcp-maintainer-tools/actions/workflows/tests.yml)
 
 [Get started](#get-started) · [Usage guide](docs/USAGE.md) · [Contribute](CONTRIBUTING.md) · [Security](SECURITY.md) · [Brand assets](docs/BRAND.md)
 
-The server connects an MCP client to **OSV, NVD, CISA KEV, FIRST EPSS, and deps.dev** over local **stdio**. It returns source context and explicit pagination so maintainers can inspect the evidence behind an answer.
+## A concrete research question
+
+You have an exact public package version and want to inspect its advisories, then enrich any CVE aliases with NVD, KEV, and EPSS context. The server returns source context and explicit pagination over local **stdio**.
+
+| Question | Tools |
+| --- | --- |
+| Which advisories does OSV return for this package version? | `osv_query`, `osv_batch`, `osv_vuln` |
+| What does NVD report, and is the CVE in the fetched KEV catalog? | `nvd_cve`, `kev_check` |
+| What EPSS score and package metadata are available? | `epss`, `depsdev_package` |
+
+**Start here:** [install and connect your client](#get-started), then try the [example research prompt](#try-a-research-question). No API key is required; an optional NVD key is supported.
 
 Results are available as both structured MCP objects and JSON text, with an object output schema for every tool.
 
@@ -79,7 +91,9 @@ By default, the transport ignores environment proxy and custom-CA settings. If y
 
 OSV defaults to ecosystem `npm`; deps.dev defaults to system `npm`. Their ecosystem/system identifiers are not interchangeable. The [usage guide](docs/USAGE.md#tool-reference) describes arguments and limits.
 
-For example, ask an MCP client:
+## Try a research question
+
+After connecting the server, ask your MCP client:
 
 > Look up OSV records for `lodash` version `4.17.21` in the `npm` ecosystem. Retrieve every page. For any advisory with a CVE alias, use NVD, KEV, and EPSS for additional context. Preserve sources and unknowns; do not call the package safe merely because a lookup is empty.
 
