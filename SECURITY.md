@@ -4,7 +4,7 @@
 
 For a security issue in this server, use the repository's **Security → Report a vulnerability** option if GitHub private vulnerability reporting is available:
 
-https://github.com/No3214/mcp-maintainer-tools/security
+https://github.com/No3214/mcp-vulnerability-research/security
 
 If that option is unavailable, open a minimal issue asking the maintainer for a private reporting channel. Do not include credentials, private package names, sensitive logs, or an exploit payload in a public issue. No response-time guarantee is offered.
 
