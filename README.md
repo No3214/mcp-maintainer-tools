@@ -1,12 +1,14 @@
 <img src="docs/assets/github-banner.svg" alt="MCP Maintainer Tools — Evidence, within reach. Seven read-only tools for source-aware vulnerability and package research." width="1600">
 
-# MCP Maintainer Tools
+# MCP Vulnerability Research
+
+MCP Maintainer Tools is the Python package and CLI behind this repository.
 
 **Investigate package advisories from your MCP client, with the sources in view.**
 
 Seven read-only [Model Context Protocol](https://modelcontextprotocol.io/) tools connect your client to **OSV, NVD, CISA KEV, FIRST EPSS, and deps.dev**. Retrieve advisory records, inspect known-exploitation context and exploit-probability scores, and keep provider meanings separate.
 
-[![Checks](https://github.com/No3214/mcp-maintainer-tools/actions/workflows/tests.yml/badge.svg)](https://github.com/No3214/mcp-maintainer-tools/actions/workflows/tests.yml)
+[![Checks](https://github.com/No3214/mcp-vulnerability-research/actions/workflows/tests.yml/badge.svg)](https://github.com/No3214/mcp-vulnerability-research/actions/workflows/tests.yml)
 
 [Get started](#get-started) · [Usage guide](docs/USAGE.md) · [Contribute](CONTRIBUTING.md) · [Security](SECURITY.md) · [Brand assets](docs/BRAND.md)
 
@@ -35,7 +37,7 @@ You need **Git, Python 3.11 or newer, an MCP client with stdio support, and HTTP
 ### macOS or Linux
 
 ```sh
-git clone https://github.com/No3214/mcp-maintainer-tools.git
+git clone https://github.com/No3214/mcp-vulnerability-research.git mcp-maintainer-tools
 cd mcp-maintainer-tools
 python3 -m venv .venv
 ./.venv/bin/python -m pip install .
@@ -44,7 +46,7 @@ python3 -m venv .venv
 ### Windows PowerShell
 
 ```powershell
-git clone https://github.com/No3214/mcp-maintainer-tools.git
+git clone https://github.com/No3214/mcp-vulnerability-research.git mcp-maintainer-tools
 Set-Location mcp-maintainer-tools
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install .
@@ -143,7 +145,7 @@ The `Required checks` job succeeds only when every prerequisite job succeeds. Jo
 
 The `dev`, `audit`, and `build` extras provide the corresponding local tools. The [contribution guide](CONTRIBUTING.md#run-the-quality-and-package-checks) lists the commands. The MCP SDK is constrained to the **1.30 series** while its typed-input, protocol-version, and log/error adapters are reviewed against that series.
 
-Report implementation vulnerabilities through [SECURITY.md](SECURITY.md). Use [GitHub issues](https://github.com/No3214/mcp-maintainer-tools/issues) for reproducible bugs, documentation improvements, and proposed changes to scope.
+Report implementation vulnerabilities through [SECURITY.md](SECURITY.md). Use [GitHub issues](https://github.com/No3214/mcp-vulnerability-research/issues) for reproducible bugs, documentation improvements, and proposed changes to scope.
 
 ## License and identity
 

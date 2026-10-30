@@ -7,7 +7,7 @@ MCP Maintainer Tools helps maintainers inspect public vulnerability and package 
 Use Python 3.11 or newer. On macOS/Linux:
 
 ```sh
-git clone https://github.com/No3214/mcp-maintainer-tools.git
+git clone https://github.com/No3214/mcp-vulnerability-research.git mcp-maintainer-tools
 cd mcp-maintainer-tools
 python3 -m venv .venv
 ./.venv/bin/python -m pip install -e '.[dev]'
@@ -76,7 +76,7 @@ For network configuration changes, preserve the default-disabled environment tru
 
 ## Propose a focused change
 
-Open an issue or pull request at [No3214/mcp-maintainer-tools](https://github.com/No3214/mcp-maintainer-tools). Explain the observed problem, expected behavior, the change, and how you verified it. Discuss additional tools or providers in an issue before expanding the server's scope.
+Open an issue or pull request at [No3214/mcp-vulnerability-research](https://github.com/No3214/mcp-vulnerability-research). Explain the observed problem, expected behavior, the change, and how you verified it. Discuss additional tools or providers in an issue before expanding the server's scope.
 
 Keep tool names and argument behavior stable where possible. If a change intentionally rejects previously accepted input or changes an output field, describe its compatibility impact and update the [usage guide](docs/USAGE.md).
 

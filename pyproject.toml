@@ -40,10 +40,10 @@ build = ["build==1.6.1", "twine==7.0.0"]
 mcp-maintainer-tools = "mcp_maintainer_tools.cli:main"
 
 [project.urls]
-Repository = "https://github.com/No3214/mcp-maintainer-tools"
-Issues = "https://github.com/No3214/mcp-maintainer-tools/issues"
-Documentation = "https://github.com/No3214/mcp-maintainer-tools/blob/main/docs/USAGE.md"
-Changelog = "https://github.com/No3214/mcp-maintainer-tools/blob/main/CHANGELOG.md"
+Repository = "https://github.com/No3214/mcp-vulnerability-research"
+Issues = "https://github.com/No3214/mcp-vulnerability-research/issues"
+Documentation = "https://github.com/No3214/mcp-vulnerability-research/blob/main/docs/USAGE.md"
+Changelog = "https://github.com/No3214/mcp-vulnerability-research/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
